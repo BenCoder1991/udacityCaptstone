@@ -162,7 +162,7 @@ jobs:
           paths:
             - project/.circleci/ansible/inventory.txt
 # Reference: https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/.circleci/config.yml
-      - destroy_environment
+      - destroy-environment
       # Here's where you will add some code to rollback on failure      
 
 #  configure-infrastructure:
