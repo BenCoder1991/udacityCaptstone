@@ -2,7 +2,6 @@ version: 2.1
 
 commands:
   destroy-environment:
-# Reference: https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/.circleci/config.yml
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     parameters:
       # Add parameter here   
@@ -11,7 +10,9 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
-            aws cloudformation delete-stack --stack-name myStack-${CIRCLE_WORKFLOW_ID:0:7}
+            aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
+            aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
+            
 #  revert-migrations:
 #    description: Revert the last migration if successfully run in the current workflow.
 #    parameters:
@@ -127,12 +128,13 @@ jobs:
             npm audit fix --audit-level=critical --force
             # If the "npm audit fix" command above could not fix all critical vulnerabilities, try “npm audit fix --force” again
             npm audit --audit-level=critical
-            
+
   deploy-infrastructure:
-    docker:
+      docker:
       - image: amazon/aws-cli
     steps:
       - checkout
+      - yum install -y tar gzip
       - run:
           name: Ensure back-end infrastructure exists
           command: |
@@ -161,7 +163,6 @@ jobs:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-# Reference: https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/.circleci/config.yml
       - destroy-environment
       # Here's where you will add some code to rollback on failure      
 
@@ -314,7 +315,7 @@ workflows:
           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
           filters:
             branches:
-              only: [test-feature-branch]
+              only: [main]
 #      #- configure-infrastructure:
 #      #    requires: [deploy-infrastructure]
 #      #- run-migrations:
