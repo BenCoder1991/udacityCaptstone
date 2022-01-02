@@ -175,9 +175,15 @@ jobs:
       - attach_workspace: # reference: https://classroom.udacity.com/nanodegrees/nd9991/parts/12a332e4-2fa5-4233-80ca-b8a4f4791953/modules/4fee4e85-fc99-4307-9568-115fd713c77a/lessons/325e008a-6d4f-4e92-9dbf-8438ecb2775f/concepts/6ce89032-f71a-4249-9230-2f8c7c12d73f
           at: ~/
       - run:
-          name: Install dependencies
+          name: Install dependencies # Reference for awscli # https://stackoverflow.com/a/67191348
           command: |
-            apk add --update tar gzip ansible aws-cli
+            apk add --update tar gzip ansible
+            apk update \
+            && apk --no-cache add curl \
+            && apk --no-cache add unzip \
+            && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+            && unzip awscliv2.zip \
+            && ./aws/install
       - run:
           name: Configure server
           command: |
