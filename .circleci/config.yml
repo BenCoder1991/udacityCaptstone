@@ -189,24 +189,32 @@ jobs:
           command: |
             cd .circleci/ansible
             ansible-playbook -i inventory.txt configure-server.yml
-      # Here's where you will add some code to rollback on failure      
+      - destroy-environment     
 
-#  run-migrations:
-#    docker:
-#      # Docker image here that supports NodeJS
-#    steps:
-#      # Checkout code from git
-#      - run:
-#          name: Run migrations
-#          command: |
-#            # Your code here
-#            exit 1
+  run-migrations:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - checkout
+      - run:
+          name: Run migrations
+          command: |
+            cd backend
+            npm install
+            # Run and sve the migration output
+            npm run migrations > migrations_dump.txt
+      - save_cache:
+          paths: 
+            - ~/project/backend/migrations_dump.txt
+          key: memstash-substitute
 #      - run:
 #          name: Send migration results to memstash
 #          command: |
-#            # Your code here
-#            exit 1
-#     # Here's where you will add some code to rollback on failure      
+#            if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
+#            then
+#              curl -H "Content-Type: text/plain" -H "token: 7933fe63-4687-4fa1-8426-aa25aa1730ec" --request PUT --data "1" https://api.memstash.io/values/migration_${CIRCLE_WORKFLOW_ID:0:7}
+#            fi
+      - destroy-environment      
 
 #  deploy-frontend:
 #    docker:
