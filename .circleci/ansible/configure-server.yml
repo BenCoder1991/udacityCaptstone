@@ -35,4 +35,5 @@
     - TYPEORM_MIGRATIONS_DIR: "{{ lookup('env', 'TYPEORM_MIGRATIONS_DIR')}}"
 
   roles:
-    # Your code here
+    - configure-server
+    # as described here: https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/main1.yml
