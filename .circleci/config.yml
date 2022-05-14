@@ -165,7 +165,7 @@ jobs:
             paths:
               - project/.circleci/ansible/inventory.txt
         - destroy-environment
-# reference: https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/.circleci/config.yml
+# reference: https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/.circleci/config.yml as reference
   configure-infrastructure:
     docker:
       - image: python:3.7-alpine3.11
