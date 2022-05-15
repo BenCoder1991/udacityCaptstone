@@ -163,7 +163,7 @@ jobs:
         - persist_to_workspace:
             root: ~/
             paths:
-              - .circleci/ansible/inventory.txt
+              - inventory.txt
         - destroy-environment
 # reference: https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/.circleci/config.yml as reference
   configure-infrastructure:
@@ -175,7 +175,7 @@ jobs:
           fingerprint: ["36:c2:dc:b2:83:54:39:25:78:11:ac:3a:ae:56:26:22"]
       - attach_workspace: # reference: https://classroom.udacity.com/nanodegrees/nd9991/parts/12a332e4-2fa5-4233-80ca-b8a4f4791953/modules/4fee4e85-fc99-4307-9568-115fd713c77a/lessons/325e008a-6d4f-4e92-9dbf-8438ecb2775f/concepts/6ce89032-f71a-4249-9230-2f8c7c12d73f
           at: ~/
-      - run: cat .circleci/ansible/inventory.txt
+      - run: cat inventory.txt
       - run:
           name: Install dependencies # Reference for awscli # https://stackoverflow.com/a/67191348
           command: |
