@@ -160,10 +160,14 @@ jobs:
               aws ec2 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --output text >> inventory
+        - run:
+            name: debug-inventory file
+            command:  |
+              cat .circleci/ansible/inventory.txt
         - persist_to_workspace:
             root: ~/
             paths:
-              - inventory.txt
+              - .circleci/ansible/inventory.txt
         - destroy-environment
 # reference: https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/.circleci/config.yml as reference
   configure-infrastructure:
