@@ -159,7 +159,7 @@ jobs:
               cd .circleci/ansible
               aws ec2 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --output text >> inventory
+              --output text >> inventory.txt
         - run:
             name: Add test to echo ip address
             command: |
@@ -173,7 +173,7 @@ jobs:
         - persist_to_workspace:
             root: ~/
             paths:
-              - .inventory.txt
+              - project/.circleci/ansible/inventory.txt
         - destroy-environment
 # reference: https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/.circleci/config.yml as reference
   configure-infrastructure:
