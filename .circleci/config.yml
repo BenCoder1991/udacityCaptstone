@@ -165,6 +165,7 @@ jobs:
             command: |
               aws ec2 describe-instances \
               --query 'Reservations[*].Instances[*].PublicIpAddress' \
+              --filters Name=tag:Name, Values=backend-${CIRCLE_WORKFLOW_ID:0:7}
               --output text
         - run:
             name: debug-inventory file
@@ -176,6 +177,7 @@ jobs:
               - project/.circleci/ansible/inventory.txt
         - destroy-environment
 # reference: https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/.circleci/config.yml as reference
+# reference for name taggin: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html#Using_Tags_CLI
   configure-infrastructure:
     docker:
       - image: python:3.7-alpine3.11
