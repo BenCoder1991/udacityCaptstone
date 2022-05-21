@@ -230,7 +230,9 @@ jobs:
             then
               curl https://kvdb.io/8fcQHcAt7NSBhh9jZuqxU1/migration_${CIRCLE_WORKFLOW_ID:0:7} -d '1'
             fi
-      - destroy-environment      
+      - destroy-environment
+      
+      # c.f. https://knowledge.udacity.com/questions/721098
 
 #  deploy-frontend:
 #    docker:
