@@ -222,6 +222,7 @@ jobs:
           paths: 
             - ~/project/backend/migrations_dump.txt
           key: memstash-substitute
+      - run: cat ~/project/backend/migrations_dump.txt
       - run:
           name: Send migration results to memstash
           command: |
@@ -347,8 +348,8 @@ workflows:
               only: [master]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
-#      #- run-migrations:
-#      #    requires: [configure-infrastructure]
+      - run-migrations:
+          requires: [configure-infrastructure]
 #      #- deploy-frontend:
 #      #    requires: [run-migrations]
 #      #- deploy-backend:
