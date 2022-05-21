@@ -164,7 +164,7 @@ jobs:
             name: Add test to echo ip address
             command: |
               aws ec2 describe-instances \
-              --query 'Reservations[*].Instances[*].PublicIpAddress'\
+              --query 'Reservations[*].Instances[*].PublicIpAddress' \
               --output text
         - run:
             name: debug-inventory file
