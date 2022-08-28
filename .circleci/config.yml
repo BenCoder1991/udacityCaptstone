@@ -234,42 +234,70 @@ jobs:
       
       # c.f. https://knowledge.udacity.com/questions/721098
 
-#  deploy-frontend:
-#    docker:
-#      # Docker image here that supports AWS CLI
-#    steps:
-#      # Checkout code from git
-#      - run:
-#          name: Install dependencies
-#          command: |
-#            # your code here
-#      - run:
-#          name: Get backend url
-#          command: |
-#            # your code here
-#            export API_URL="http://${BACKEND_IP}:3030"
-#            echo "${API_URL}"
-#      - run:
-#          name: Deploy frontend objects
-#          command: |
-#            # your code here
-#      # Here's where you will add some code to rollback on failure      
-#                    
-#  deploy-backend:
-#    docker:
-#      # Docker image here that supports Ansible
-#    steps:
-#      # Checkout code from git
-#      # Add ssh keys with fingerprint
-#      # attach workspace
-#      - run:
-#          name: Install dependencies
-#          command: |
-#            # your code here
-#      - run:
-#          name: Deploy backend
-#          command: |
-#            # your code here
+deploy-frontend:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      checkout
+      - run:
+          name: Install dependencies # needed according to https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-ansible-on-centos-7
+          command: |
+            yum install -y python3
+            yum install -y epel-release
+            yum install -y ansible
+            yum install -y tar gzip
+
+      - run:
+          name: Get backend url
+          command: |
+            export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --output text)
+            export API_URL="http://${BACKEND_IP}:3030"
+            echo "${API_URL}"
+            echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
+            cat frontend/.env
+      - run:
+          name: Deploy frontend objects
+          command: |
+            cd frontend
+            npm install
+            npm run build
+            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
+            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+      - destroy-environment     
+                    
+  deploy-backend:
+    docker:
+      # Docker image here that supports Ansible
+    steps:
+      - checkout
+      - add_ssh_keys: 
+        fingerprint: ["36:c2:dc:b2:83:54:39:25:78:11:ac:3a:ae:56:26:22"]
+      - attach_workspace: # reference: https://classroom.udacity.com/nanodegrees/nd9991/parts/12a332e4-2fa5-4233-80ca-b8a4f4791953/modules/4fee4e85-fc99-4307-9568-115fd713c77a/lessons/325e008a-6d4f-4e92-9dbf-8438ecb2775f/concepts/6ce89032-f71a-4249-9230-2f8c7c12d73f
+          at: ~/
+      - run:
+          name: Install dependencies # https://superuser.com/questions/1125969/how-to-install-npm-in-alpine-linux
+          command: |
+            apk add --update tar gzip ansible
+            apk add --update npm 
+            apk update \
+            && apk --no-cache add curl \
+            && apk --no-cache add unzip \
+            && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+            && unzip awscliv2.zip \
+            && ./aws/install
+      - run:
+          name: Deploy backend
+          command: |
+            cd backend
+            npm i
+            npm run build
+            cd ..
+            # Zip the directory
+            tar -C backend -czvf artifact.tar.gz .
+            cd .circleci/ansible
+            echo "Contents  of the inventory.txt file is -------"
+            cat inventory.txt
+            ansible-playbook -i inventory.txt deploy-backend.yml
 #      # Here's where you will add some code to rollback on failure 
 
 #  smoke-test:
@@ -352,10 +380,10 @@ workflows:
           requires: [deploy-infrastructure]
       - run-migrations:
           requires: [configure-infrastructure]
-#      #- deploy-frontend:
-#      #    requires: [run-migrations]
-#      #- deploy-backend:
-#      #    requires: [run-migrations]
+      - deploy-frontend:
+          requires: [run-migrations]
+      - deploy-backend:
+          requires: [run-migrations]
 #      #- smoke-test:
 #      #    requires: [deploy-backend, deploy-frontend]
 #      #- cloudfront-update:
