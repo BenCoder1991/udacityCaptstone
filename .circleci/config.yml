@@ -243,7 +243,7 @@ jobs:
           command: |
             yum install -y python3
             # yum install -y epel-release
-            yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+            yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
             yum install -y ansible
             yum install -y tar gzip
             yum install -y nodejs
@@ -358,7 +358,8 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            # your code here
+            yum install -y python3
+            yum install -y tar gzip
       - run:
           name: Update cloudfront distribution
           command: |
@@ -367,6 +368,8 @@ jobs:
             --stack-name InitialStack \
             --parameter-overrides WorkflowID="udapeople-${CIRCLE_WORKFLOW_ID:0:7}" \
             --tags project=udapeople
+      - destroy-environment
+      - revert-migrations
       # Here's where you will add some code to rollback on failure  
 
 #cleanup:
