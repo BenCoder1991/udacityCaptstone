@@ -246,6 +246,7 @@ jobs:
             # yum install -y epel-release
             # yum install -y ansible
             yum install -y tar gzip
+            yum install nodejs
 
       - run:
           name: Get backend url
@@ -385,7 +386,7 @@ workflows:
       - deploy-frontend:
           requires: [run-migrations]
       - deploy-backend:
-          requires: [run-migrations]
+          requires: [run-migrations, deploy-frontend]
 #      #- smoke-test:
 #      #    requires: [deploy-backend, deploy-frontend]
 #      #- cloudfront-update:
