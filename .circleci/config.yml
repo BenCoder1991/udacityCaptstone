@@ -243,8 +243,8 @@ jobs:
           command: |
             yum install -y python3
             # yum install -y epel-release
-            yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-            # yum install -y ansible
+            yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+            yum install -y ansible
             yum install -y tar gzip
             yum install -y nodejs
 
@@ -350,20 +350,24 @@ jobs:
       - revert-migrations
       # Here's where you will add some code to rollback on failure  
 
-#  cloudfront-update:
-#    docker:
-#      # Docker image here that supports AWS CLI
-#    steps:
-#      # Checkout code from git
-#      - run:
-#          name: Install dependencies
-#          command: |
-#            # your code here
-#      - run:
-#          name: Update cloudfront distribution
-#          command: |
-#            # your code here
-#      # Here's where you will add some code to rollback on failure  
+  cloudfront-update:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+    # Checkout code from git
+      - run:
+          name: Install dependencies
+          command: |
+            # your code here
+      - run:
+          name: Update cloudfront distribution
+          command: |
+            aws cloudformation deploy \
+            --template-file .circleci/files/cloudfront.yml \
+            --stack-name InitialStack \
+            --parameter-overrides WorkflowID="udapeople-${CIRCLE_WORKFLOW_ID:0:7}" \
+            --tags project=udapeople
+      # Here's where you will add some code to rollback on failure  
 
 #cleanup:
 #    docker:
