@@ -234,19 +234,26 @@ jobs:
   
   deploy-frontend:
     docker:
-      - image: amazon/aws-cli
+      - image: python:3.7-alpine3.11 # amazon/aws-cli
     steps:
       - checkout
       - run:
           name: Install dependencies # needed according to https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-ansible-on-centos-7
           # https://stackoverflow.com/questions/49606453/dockerfile-is-building-from-centos7-is-there-a-way-to-instruct-npm-to-be-inst
           command: |
-            yum install -y python3
+            # yum install -y python3
             # yum install -y epel-release
-            yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
-            yum install -y ansible
-            yum install -y tar gzip
-            yum install -y nodejs
+            # yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+            # yum install -y ansible
+            # yum install -y tar gzip
+            # yum install -y nodejs
+            apk add --update tar gzip ansible nodejs
+            apk update \
+            && apk --no-cache add curl \
+            && apk --no-cache add unzip \
+            && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+            && unzip awscliv2.zip \
+            && ./aws/install
 
       - run:
           name: Get backend url
@@ -264,7 +271,8 @@ jobs:
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
-      - destroy-environment     
+      - destroy-environment
+      - revert-migrations
                     
   deploy-backend:
     docker:
@@ -300,6 +308,7 @@ jobs:
             cat inventory.txt
             ansible-playbook -i inventory.txt deploy-backend.yml
       - destroy-environment
+      - revert-migrations
 #      
 # Here's where you will add some code to rollback on failure 
 
@@ -372,26 +381,34 @@ jobs:
       - revert-migrations
       # Here's where you will add some code to rollback on failure  
 
-#cleanup:
-#    docker:
-#      # Docker image here
-#    steps:
-#      # Checkout code from git
-#      - run:
-#          name: Get old stack workflow id
-#          command: |
-#            # your code here
-#            export OldWorkflowID="the id here"
-#            export STACKS=[] #put the list of stacks here
-#      - run:
-#          name: Remove old stacks and files
-#          command: |
-#            if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
-#            then
-#              # your code here
-#            fi
-#            
-
+cleanup:
+    docker:
+      # Docker image here
+    steps:
+      - checkout
+      - run:
+          name: Get old stack workflow id
+          command: |
+            # Fetch the Old workflow ID
+            export OldWorkflowID=$(aws cloudformation \
+                    list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
+                    --no-paginate --output text)
+            echo OldWorkflowID: "${OldWorkflowID}"
+            echo CIRCLE_WORKFLOW_ID "${CIRCLE_WORKFLOW_ID:0:7}"
+            # Fetch the stack names          
+            export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
+                    --stack-status-filter CREATE_COMPLETE --no-paginate --output text)) 
+            echo Stack names: "${STACKS[@]}" 
+      - run:
+          name: Remove old stacks and files
+          command: |
+            if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
+            then
+              aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
+              aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
+              aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
+            fi
+            
 workflows:
   default:
     jobs:
@@ -418,9 +435,9 @@ workflows:
           requires: [run-migrations]
       - deploy-backend:
           requires: [run-migrations, deploy-frontend]
-#      #- smoke-test:
-#      #    requires: [deploy-backend, deploy-frontend]
-#      #- cloudfront-update:
-#      #    requires: [smoke-test]
-#      #- cleanup:
-#      #    requires: [cloudfront-update]
+      - smoke-test:
+          requires: [deploy-backend, deploy-frontend]
+      - cloudfront-update:
+          requires: [smoke-test]
+      - cleanup:
+          requires: [cloudfront-update]
