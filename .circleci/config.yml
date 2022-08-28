@@ -244,7 +244,7 @@ jobs:
           command: |
             yum install -y python3
             # yum install -y epel-release
-            yum install -y ansible
+            # yum install -y ansible
             yum install -y tar gzip
 
       - run:
