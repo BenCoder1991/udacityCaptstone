@@ -4,7 +4,8 @@ commands:
   destroy-environment:
     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
     parameters:
-      # Add parameter here   
+      workflow_id:
+        type: string  
     steps:
       - run:
           name: Destroy environments
@@ -13,24 +14,25 @@ commands:
             aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
             aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
             
-#  revert-migrations:
-#    description: Revert the last migration if successfully run in the current workflow.
-#    parameters:
-#      # Add parameter here     
-#    steps:
-#      - run:
-#          name: Revert migrations
-#          # Add when this will run
-#          command: |
-#            # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-#            SUCCESS = 1
-#            if(( $SUCCESS==1 )); 
-#            then
-#            #  cd ~/project/backend
-#            #  npm install
-#            #  Add revert code here. You can find this in the Getting Started section.
-#              exit 1
-#            fi
+  revert-migrations:
+    description: Revert the last migration if successfully run in the current workflow.
+    parameters:
+      workflow_id:
+        type: string     
+    steps:
+      - run:
+          name: Revert migrations
+          when: on_fail
+          command: |
+            # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
+            SUCCESS=$(curl --insecure  https://kvdb.io/8fcQHcAt7NSBhh9jZuqxU1/migration_<< parameters.workflow_id >>)
+            if(( $SUCCESS==1 )); 
+            then
+              cd ~/project/backend
+              npm install
+              npm run migration:revert
+              exit 1
+            fi
             
 jobs:
   build-frontend:
@@ -244,7 +246,7 @@ jobs:
           # https://stackoverflow.com/questions/49606453/dockerfile-is-building-from-centos7-is-there-a-way-to-instruct-npm-to-be-inst
           command: |
             yum install -y python3
-            yum install -y epel-release
+            # yum install -y epel-release
             yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
             # yum install -y ansible
             yum install -y tar gzip
@@ -349,6 +351,7 @@ jobs:
                 return 1
               fi
       - destroy-environment
+      - revert-migrations
       # Here's where you will add some code to rollback on failure  
 
 #  cloudfront-update:
