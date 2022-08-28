@@ -233,8 +233,8 @@ jobs:
       - destroy-environment
       
       # c.f. https://knowledge.udacity.com/questions/721098
-
-deploy-frontend:
+  
+  deploy-frontend:
     docker:
       - image: amazon/aws-cli
     steps:
