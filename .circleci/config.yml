@@ -249,7 +249,7 @@ jobs:
             yum install -y ansible
             yum install -y tar gzip
             yum remove libuv -y
-            wget https://rpmfind.net/linux/epel/7/x86_64/Packages/l/libuv-1.44.1-1.el7.x86_64.rpm
+            yum install -y  https://rpmfind.net/linux/epel/7/x86_64/Packages/l/libuv-1.44.1-1.el7.x86_64.rpm
             rpm -i libuv-1.44.1-1.el7.x86_64.rpm
             yum install -y nodejs npm
             # apk add --update tar gzip ansible nodejs npm
