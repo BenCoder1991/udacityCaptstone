@@ -238,7 +238,7 @@ deploy-frontend:
     docker:
       - image: amazon/aws-cli
     steps:
-      checkout
+      - checkout
       - run:
           name: Install dependencies # needed according to https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-ansible-on-centos-7
           command: |
