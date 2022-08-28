@@ -267,7 +267,7 @@ deploy-frontend:
                     
   deploy-backend:
     docker:
-      # Docker image here that supports Ansible
+      - image: python:3.7-alpine3.11
     steps:
       - checkout
       - add_ssh_keys: 
