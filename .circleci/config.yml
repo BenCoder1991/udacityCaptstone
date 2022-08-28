@@ -243,7 +243,7 @@ jobs:
           name: Install dependencies # needed according to https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-ansible-on-centos-7
           command: |
             yum install -y python3
-            yum install -y epel-release
+            # yum install -y epel-release
             yum install -y ansible
             yum install -y tar gzip
 
