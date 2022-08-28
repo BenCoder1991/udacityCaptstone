@@ -78,7 +78,7 @@ jobs:
             cd frontend
             npm install
             npm run test
-              
+
   test-backend:
     docker:
       - image: circleci/node:13.8.0
@@ -247,14 +247,13 @@ jobs:
             # yum install -y ansible
             # yum install -y tar gzip
             # yum install -y nodejs
-            apk add --update tar gzip ansible nodejs
+            apk add --update tar gzip ansible nodejs npm
             apk update \
             && apk --no-cache add curl \
             && apk --no-cache add unzip \
             && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
             && unzip awscliv2.zip \
             && ./aws/install
-
       - run:
           name: Get backend url
           command: |
