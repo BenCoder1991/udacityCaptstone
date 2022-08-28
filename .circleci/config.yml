@@ -234,26 +234,27 @@ jobs:
   
   deploy-frontend:
     docker:
-      - image: python:3.7-alpine3.11 # amazon/aws-cli
+      - image: amazon/aws-cli  # python:3.7-alpine3.11
     steps:
       - checkout
       - run:
           name: Install dependencies # needed according to https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-ansible-on-centos-7
-          # https://stackoverflow.com/questions/49606453/dockerfile-is-building-from-centos7-is-there-a-way-to-instruct-npm-to-be-inst
+          # https://stackoverflow.com/questions/49606453/dockerfile-is-building-from-centos7-is-there-a-way-to-instruct-npm-to-be-inst 
+          # https://www.cyberciti.biz/faq/installing-rhel-epel-repo-on-centos-redhat-7-x/
           command: |
-            # yum install -y python3
-            # yum install -y epel-release
-            # yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
-            # yum install -y ansible
-            # yum install -y tar gzip
-            # yum install -y nodejs
-            apk add --update tar gzip ansible nodejs npm
-            apk update \
-            && apk --no-cache add curl \
-            && apk --no-cache add unzip \
-            && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
-            && unzip awscliv2.zip \
-            && ./aws/install
+            yum install -y python3
+            yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+            yum repolist
+            yum install -y ansible
+            yum install -y tar gzip
+            yum install -y nodejs npm
+            # apk add --update tar gzip ansible nodejs npm
+            # apk update \
+            # && apk --no-cache add curl \
+            # && apk --no-cache add unzip \
+            # && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+            # && unzip awscliv2.zip \
+            # && ./aws/install
       - run:
           name: Get backend url
           command: |
