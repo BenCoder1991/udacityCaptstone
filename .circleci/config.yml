@@ -243,10 +243,14 @@ jobs:
           # https://www.cyberciti.biz/faq/installing-rhel-epel-repo-on-centos-redhat-7-x/
           command: |
             yum install -y python3
+            # https://stackoverflow.com/questions/71043534/nodejs-16-dependency-issue-with-libuv
             yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
             yum repolist
             yum install -y ansible
             yum install -y tar gzip
+            yum remove libuv -y
+            wget https://rpmfind.net/linux/epel/7/x86_64/Packages/l/libuv-1.44.1-1.el7.x86_64.rpm
+            rpm -i libuv-1.44.1-1.el7.x86_64.rpm
             yum install -y nodejs npm
             # apk add --update tar gzip ansible nodejs npm
             # apk update \
