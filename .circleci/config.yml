@@ -234,7 +234,7 @@ jobs:
   
   deploy-frontend:
     docker:
-      - image: amazon/aws-cli  # python:3.7-alpine3.11
+      - image: doctrine/nodejs-aws-cli  # python:3.7-alpine3.11
     steps:
       - checkout
       - run:
@@ -248,8 +248,8 @@ jobs:
             yum repolist
             yum install -y ansible
             yum install -y tar gzip
-            yum -y install yum-skip-broken
-            yum install -y nodejs npm --skip-broken
+            # yum -y install yum-skip-broken
+            # yum install -y nodejs npm --skip-broken
             # apk add --update tar gzip ansible nodejs npm
             # apk update \
             # && apk --no-cache add curl \
