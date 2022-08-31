@@ -206,7 +206,7 @@ jobs:
 
   run-migrations:
     docker:
-      - image: python:3.7-alpine3.11 #circleci/node:13.8.0
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - run:
