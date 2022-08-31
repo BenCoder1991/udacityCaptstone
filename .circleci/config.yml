@@ -206,7 +206,7 @@ jobs:
 
   run-migrations:
     docker:
-      - image: circleci/node #:13.8.0
+      - image: circleci/node:13.8.0
     steps:
       - checkout
       - run:
@@ -216,7 +216,7 @@ jobs:
             npm install
             # Run and sve the migration output
             npm audit fix --audit-level=critical --force
-            npm audit fix --force # try this, is occasionally there were unfixed vulnerabilities
+            # npm audit fix --force # try this, is occasionally there were unfixed vulnerabilities
             npm run migrations > migrations_dump.txt
       - save_cache:
           paths: 
