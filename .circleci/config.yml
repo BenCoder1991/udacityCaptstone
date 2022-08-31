@@ -215,8 +215,9 @@ jobs:
             cd backend
             npm install
             # Run and sve the migration output
-            #npm audit fix --audit-level=critical --force
+            # npm audit fix --audit-level=critical --force
             # npm audit fix --force # try this, is occasionally there were unfixed vulnerabilities
+            npm audit fix
             npm run migrations > migrations_dump.txt
       - save_cache:
           paths: 
