@@ -17,9 +17,6 @@
     pm2 start npm -- start   
   register: print_result
 
-# as in https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/roles/print/tasks/main.yml
-- name: print message
+- name: "print message"
   debug:
   msg: "{{ print_result.stdout_lines }}"
-    
-    
