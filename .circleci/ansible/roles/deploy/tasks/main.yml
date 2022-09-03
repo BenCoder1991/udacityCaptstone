@@ -2,9 +2,9 @@
 - name: "copy file to backend infrastructure"
   become: true
   copy:
-    src: artifact.tar.gz
+    src: ~/artifact.tar.gz
     dest: ~/
-    remote_src: yes
+    remote_src: false
     mode: '0777'
 
 - name: "extract zipped artifact"
