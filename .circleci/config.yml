@@ -246,6 +246,7 @@ jobs:
           name: Install dependencies (1) # needed according to https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-ansible-on-centos-7
           # https://stackoverflow.com/questions/49606453/dockerfile-is-building-from-centos7-is-there-a-way-to-instruct-npm-to-be-inst 
           # https://www.cyberciti.biz/faq/installing-rhel-epel-repo-on-centos-redhat-7-x/
+          # however issues may occur with nodesource
           command: |
             yum install -y python3
             # https://stackoverflow.com/questions/71043534/nodejs-16-dependency-issue-with-libuv
