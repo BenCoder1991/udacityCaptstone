@@ -238,6 +238,7 @@ jobs:
   deploy-frontend:
     docker:
       - image: amazon/aws-cli # doctrine/nodejs-aws-cli  # python:3.7-alpine3.11
+        user: root
     steps:
       - checkout
       - run:
@@ -249,12 +250,13 @@ jobs:
             # https://stackoverflow.com/questions/71043534/nodejs-16-dependency-issue-with-libuv
             # yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
             # yum repolist
-            apt-get install -yy npm
-            apt-get install -yy ansible
             # yum install -y ansible
             yum install -y tar gzip
             # yum -y install yum-skip-broken
             # yum install -y nodejs npm --skip-broken
+            apt-get update
+            apt-get install -yy npm
+            apt-get install -yy ansible
       - run:
           name: Get backend url
           command: |
