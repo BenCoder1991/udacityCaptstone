@@ -180,7 +180,7 @@ jobs:
 # reference for name taggin: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html#Using_Tags_CLI
   configure-infrastructure:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: node:14-alpine # python:3.7-alpine3.11
         user: root
     steps:
       - checkout
@@ -286,7 +286,7 @@ jobs:
                     
   deploy-backend:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: node:14-alpine # python:3.7-alpine3.11
         user: root
     steps:
       - checkout
@@ -327,7 +327,7 @@ jobs:
 
   smoke-test:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: node:14-alpine # python:3.7-alpine3.11
         user: root
     steps:
       # Checkout code from git
