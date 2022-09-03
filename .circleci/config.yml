@@ -239,11 +239,11 @@ jobs:
   deploy-frontend:
     docker:
       - image: amazon/aws-cli # doctrine/nodejs-aws-cli  # python:3.7-alpine3.11
-        user: root
+        user: root # c.f. https://knowledge.udacity.com/questions/804850
     steps:
       - checkout
       - run:
-          name: Install dependencies # needed according to https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-ansible-on-centos-7
+          name: Install dependencies (1) # needed according to https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-ansible-on-centos-7
           # https://stackoverflow.com/questions/49606453/dockerfile-is-building-from-centos7-is-there-a-way-to-instruct-npm-to-be-inst 
           # https://www.cyberciti.biz/faq/installing-rhel-epel-repo-on-centos-redhat-7-x/
           command: |
@@ -255,9 +255,10 @@ jobs:
             yum install -y tar gzip
             # yum -y install yum-skip-broken
             # yum install -y nodejs npm --skip-broken
-            apt-get update
-            apt-get install -yy npm
-            apt-get install -yy ansible
+            # use the following as suggested here: https://knowledge.udacity.com/questions/754485
+            cd frontend
+            curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
+            yum -y install nodejs
       - run:
           name: Get backend url
           command: |
