@@ -242,6 +242,8 @@ jobs:
         user: root # c.f. https://knowledge.udacity.com/questions/804850
     steps:
       - checkout
+      - attach_workspace: # reference: https://classroom.udacity.com/nanodegrees/nd9991/parts/12a332e4-2fa5-4233-80ca-b8a4f4791953/modules/4fee4e85-fc99-4307-9568-115fd713c77a/lessons/325e008a-6d4f-4e92-9dbf-8438ecb2775f/concepts/6ce89032-f71a-4249-9230-2f8c7c12d73f
+          at: ~/
       - run:
           name: Install dependencies (1) # needed according to https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-ansible-on-centos-7
           # https://stackoverflow.com/questions/49606453/dockerfile-is-building-from-centos7-is-there-a-way-to-instruct-npm-to-be-inst 
@@ -262,7 +264,9 @@ jobs:
       - run:
           name: Get backend url
           command: |
-            export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --output text)
+            echo $(tail -1  .circleci/ansible/inventory.txt)
+            export BACKEND_IP=$(tail -1  .circleci/ansible/inventory.txt)
+            # export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --output text)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
             echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
@@ -283,6 +287,8 @@ jobs:
       - image: python:3.7-alpine3.11
     steps:
       - checkout
+      - attach_workspace: # reference: https://classroom.udacity.com/nanodegrees/nd9991/parts/12a332e4-2fa5-4233-80ca-b8a4f4791953/modules/4fee4e85-fc99-4307-9568-115fd713c77a/lessons/325e008a-6d4f-4e92-9dbf-8438ecb2775f/concepts/6ce89032-f71a-4249-9230-2f8c7c12d73f
+          at: ~/
       - add_ssh_keys: 
           fingerprint: ["36:c2:dc:b2:83:54:39:25:78:11:ac:3a:ae:56:26:22"]
       - attach_workspace: # reference: https://classroom.udacity.com/nanodegrees/nd9991/parts/12a332e4-2fa5-4233-80ca-b8a4f4791953/modules/4fee4e85-fc99-4307-9568-115fd713c77a/lessons/325e008a-6d4f-4e92-9dbf-8438ecb2775f/concepts/6ce89032-f71a-4249-9230-2f8c7c12d73f
@@ -321,6 +327,9 @@ jobs:
       - image: python:3.7-alpine3.11
     steps:
       # Checkout code from git
+      - checkout
+      - attach_workspace: # reference: https://classroom.udacity.com/nanodegrees/nd9991/parts/12a332e4-2fa5-4233-80ca-b8a4f4791953/modules/4fee4e85-fc99-4307-9568-115fd713c77a/lessons/325e008a-6d4f-4e92-9dbf-8438ecb2775f/concepts/6ce89032-f71a-4249-9230-2f8c7c12d73f
+          at: ~/
       - run:
           name: Install dependencies
           command: |
@@ -336,7 +345,9 @@ jobs:
           name: Get backend url
           command: |
             # Fetch and prepare the BACKEND_IP env var
-            export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --output text)
+            # export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --output text)
+            echo $(tail -1  .circleci/ansible/inventory.txt)
+            export BACKEND_IP=$(tail -1  .circleci/ansible/inventory.txt)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
       - run:
