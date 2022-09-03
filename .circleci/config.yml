@@ -300,6 +300,7 @@ jobs:
             apk add --update npm 
             apk update \
             && apk --no-cache add curl \
+            && apk --no-cache add sudo \
             && apk --no-cache add unzip \
             && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
             && unzip awscliv2.zip
@@ -342,6 +343,7 @@ jobs:
             apk add --update npm curl
             apk update \
             && apk --no-cache add curl \
+            && apk --no-cache add sudo \
             && apk --no-cache add unzip \
             && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
             && unzip awscliv2.zip
