@@ -1,0 +1,25 @@
+---
+- name: "copy file to backend infrastructure"
+  become: true
+  copy:
+    src: artifact.tar.gz
+    dest: ~/
+    remote_src: yes
+    mode: '0777'
+
+- name: "extract zipped artifact"
+  shell: tar -xf artifact.tar.gz
+
+- name: "run application"
+  shell:  |
+    npm install
+    pm2 stop default
+    pm2 start npm -- start   
+  register: print_result
+
+# as in https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/roles/print/tasks/main.yml
+- name: print message
+  debug:
+  msg: "{{ print_result.stdout_lines }}"
+    
+    
