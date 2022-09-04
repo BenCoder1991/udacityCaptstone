@@ -315,7 +315,7 @@ jobs:
             npm run build
             cd ..
             # trying this suggestion: https://knowledge.udacity.com/questions/736976
-            cp package* ./dist
+            # cp package* ./dist
             # Zip the directory
             tar -C backend -czvf artifact.tar.gz .
             echo "path of artifact.tar.gz is ..."
@@ -363,6 +363,7 @@ jobs:
       - run:
           name: Backend smoke test.
           command: |
+            echo "${API_URL}"
             if curl "${API_URL}/api/status" | grep "ok"
             then
                 return 0
@@ -459,9 +460,9 @@ workflows:
           requires: [run-migrations]
       - deploy-backend:
           requires: [run-migrations, deploy-frontend]
-#       - smoke-test:
-#          requires: [deploy-backend, deploy-frontend]
+      - smoke-test:
+          requires: [deploy-backend, deploy-frontend]
       - cloudfront-update:
-          requires: [deploy-backend, deploy-frontend] # [smoke-test]
+          requires: [smoke-test]
       - cleanup:
           requires: [cloudfront-update]
