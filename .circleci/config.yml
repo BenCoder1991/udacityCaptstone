@@ -390,7 +390,7 @@ jobs:
       - image: amazon/aws-cli
     steps:
     # Checkout code from git
-      -checkout
+      - checkout
       - run:
           name: Install dependencies
           command: |
