@@ -314,6 +314,8 @@ jobs:
             npm i
             npm run build
             cd ..
+            # trying this suggestion: https://knowledge.udacity.com/questions/736976
+            cp package* ./dist
             # Zip the directory
             tar -C backend -czvf artifact.tar.gz .
             echo "path of artifact.tar.gz is ..."
