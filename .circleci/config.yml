@@ -298,27 +298,27 @@ jobs:
           command: |
             apk add --update tar gzip ansible
             apk add --update npm 
-            # apk update \
-            # && apk --no-cache add curl \
-            # && apk --no-cache add sudo \
-            # && apk --no-cache add unzip \
-            # && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
-            # && unzip awscliv2.zip
-            # sudo ./aws/install
+            apk update \
+            && apk --no-cache add curl \
+            && apk --no-cache add sudo \
+            && apk --no-cache add unzip \
+            && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+            && unzip awscliv2.zip
+            sudo ./aws/install
             # try this per https://github.com/kyleknap/aws-cli/blob/source-proposal/proposals/source-install.md#alpine-linux
-            apk add --no-cache \
-            curl \
-            make \
-            cmake \
-            gcc \
-            libc-dev \
-            libffi-dev \
-            openssl-dev \
-            && curl https://awscli.amazonaws.com/awscli-2.2.1.tar.gz | tar -xz \
-            && cd awscli-2.2.1 \
-            && ./configure --prefix=/opt/aws-cli/ --with-download-deps \
-            && make \
-            && make install
+            #apk add --no-cache \
+            #curl \
+            #make \
+            #cmake \
+            #gcc \
+            #libc-dev \
+            #libffi-dev \
+            #openssl-dev \
+            #&& curl https://awscli.amazonaws.com/awscli-2.2.1.tar.gz | tar -xz \
+            #&& cd awscli-2.2.1 \
+            #&& ./configure --prefix=/opt/aws-cli/ --with-download-deps \
+            #&& make \
+            #&& make install
       - attach_workspace: # reference: https://classroom.udacity.com/nanodegrees/nd9991/parts/12a332e4-2fa5-4233-80ca-b8a4f4791953/modules/4fee4e85-fc99-4307-9568-115fd713c77a/lessons/325e008a-6d4f-4e92-9dbf-8438ecb2775f/concepts/6ce89032-f71a-4249-9230-2f8c7c12d73f
           at: ~/
       - run:
@@ -358,26 +358,26 @@ jobs:
           command: |
             apk add --update tar gzip ansible
             apk add --update npm curl
-            # apk update \
-            # && apk --no-cache add curl \
-            # && apk --no-cache add sudo \
-            # && apk --no-cache add unzip \
-            # && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
-            # && unzip awscliv2.zip
-            # sudo ./aws/install
+            apk update \
+            && apk --no-cache add curl \
+            && apk --no-cache add sudo \
+            && apk --no-cache add unzip \
+            && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+            && unzip awscliv2.zip
+            sudo ./aws/install
             apk add --no-cache \
-            curl \
-            make \
-            cmake \
-            gcc \
-            libc-dev \
-            libffi-dev \
-            openssl-dev \
-            && curl https://awscli.amazonaws.com/awscli-2.2.1.tar.gz | tar -xz \
-            && cd awscli-2.2.1 \
-            && ./configure --prefix=/opt/aws-cli/ --with-download-deps \
-            && make \
-            && make install
+            #curl \
+            #make \
+            #cmake \
+            #gcc \
+            #libc-dev \
+            #libffi-dev \
+            #openssl-dev \
+            #&& curl https://awscli.amazonaws.com/awscli-2.2.1.tar.gz | tar -xz \
+            #&& cd awscli-2.2.1 \
+            #&& ./configure --prefix=/opt/aws-cli/ --with-download-deps \
+            #&& make \
+            #&& make install
       - run:
           name: Get backend url
           command: |
