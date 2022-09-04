@@ -314,8 +314,8 @@ jobs:
             libc-dev \
             libffi-dev \
             openssl-dev \
-            && curl https://awscli.amazonaws.com/awscli-${AWSCLI_VERSION}.tar.gz | tar -xz \
-            && cd awscli-${AWSCLI_VERSION} \
+            && curl https://awscli.amazonaws.com/awscli-2.2.1.tar.gz | tar -xz \
+            && cd awscli-2.2.1 \
             && ./configure --prefix=/opt/aws-cli/ --with-download-deps \
             && make \
             && make install
@@ -373,8 +373,8 @@ jobs:
             libc-dev \
             libffi-dev \
             openssl-dev \
-            && curl https://awscli.amazonaws.com/awscli-${AWSCLI_VERSION}.tar.gz | tar -xz \
-            && cd awscli-${AWSCLI_VERSION} \
+            && curl https://awscli.amazonaws.com/awscli-2.2.1.tar.gz | tar -xz \
+            && cd awscli-2.2.1 \
             && ./configure --prefix=/opt/aws-cli/ --with-download-deps \
             && make \
             && make install
