@@ -10,7 +10,7 @@
   become: yes
   copy:
     src: /root/project/artifact.tar.gz
-    dest: /root/project/artifact.tar.gz
+    dest: /root/backend/artifact.tar.gz
 
 - name: unpack backend files
   become: yes
