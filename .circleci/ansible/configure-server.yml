@@ -36,4 +36,5 @@
 
   roles:
     - configure-server
+    - configure-prometheus-node-exporter
     # as described here: https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/main1.yml
