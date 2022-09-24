@@ -176,7 +176,7 @@ jobs:
             paths:
               - project/.circleci/ansible/inventory.txt
         - destroy-environment
-# reference: https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/.circleci/config.yml as reference
+# reference: https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/.circleci/config.yml as reference .
 # reference for name taggin: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html#Using_Tags_CLI
   configure-infrastructure:
     docker:
