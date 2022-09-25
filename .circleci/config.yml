@@ -195,9 +195,11 @@ jobs:
             sudo apt-get install -y curl 
             sudo apt-get install -y unzip
             sudo apt-get -y install python3-pip
-            #pip3 --version
-            #pip3 install --user ansible
-            sudo apt-get install ansible
+            pip3 --version
+            pip3 install --user ansible
+            export PATH=$PATH:$HOME/.local/bin
+            source .bashrc
+            which ansible
       - run:
           name: Install dependencies (part 2 AWSCLI)
           command: |
@@ -474,10 +476,10 @@ workflows:
               only: [master]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
-      - run-migrations:
-          requires: [configure-infrastructure]
-      - deploy-frontend:
-          requires: [run-migrations]
+#      - run-migrations:
+#          requires: [configure-infrastructure]
+#      - deploy-frontend:
+#          requires: [run-migrations]
 #      - deploy-backend:
 #          requires: [run-migrations, deploy-frontend]
 #      - smoke-test:
