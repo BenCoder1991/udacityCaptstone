@@ -176,7 +176,7 @@ jobs:
   # reference: https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/.circleci/config.yml
   configure-infrastructure:
     docker:
-      - image: cimg/base:current-20.04 # Reference: https://knowledge.udacity.com/questions/735873
+      - image: amazon/aws-cli#cimg/base:current-20.04 # Reference: https://knowledge.udacity.com/questions/735873
         user: root
     steps:
       - checkout
@@ -188,14 +188,18 @@ jobs:
       - run:
           name: Install dependencies (part 1)
           command: |
-            sudo apt update
-            sudo apt install -y tar 
-            sudo apt install -y gzip 
-            sudo apt install -y python3
-            sudo apt install -y curl 
-            sudo apt install -y unzip
-            sudo apt install -y ansible
-            which python
+            sudo yum install -y python3
+            sudo yum install -y tar gzip
+            sudo yum install epel-release
+            sudo yum install ansible
+            # sudo apt update
+            #sudo apt install -y tar 
+            #sudo apt install -y gzip 
+            #sudo apt install -y python3
+            #sudo apt install -y curl 
+            #sudo apt install -y unzip
+            #sudo apt install -y ansible
+            #which python
             #sudo apt-get -y install python3-pip
             #pip3 --version
             #pip3 install --user ansible
@@ -205,15 +209,15 @@ jobs:
             # source .bashrc
             # source ~/.bashrc
             # cat ~/.bashrc
-            which ansible
-            echo $PATH
-            pip3 show ansible
-      - run:
-          name: Install dependencies (part 2 AWSCLI)
-          command: |
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip awscliv2.zip
-            sudo ./aws/install
+            #which ansible
+            #echo $PATH
+            #pip3 show ansible
+#      - run:
+#          name: Install dependencies (part 2 AWSCLI)
+#          command: |
+#            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+#            unzip awscliv2.zip
+#            sudo ./aws/install
       - run:
           name: Configure server
           command: |
