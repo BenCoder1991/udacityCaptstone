@@ -187,7 +187,8 @@ jobs:
           command: |
             yum install -y python3
             yum install -y tar gzip
-            yum install epel-release
+            # yum install epel-release
+            sudo yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
             yum install ansible
             # sudo apt update
             #sudo apt install -y tar 
