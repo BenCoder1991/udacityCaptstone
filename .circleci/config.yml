@@ -194,11 +194,10 @@ jobs:
             sudo apt-get install -y python3
             sudo apt-get install -y curl 
             sudo apt-get install -y unzip
-            #curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-            #python3 get-pip.py --user
             sudo apt-get -y install python3-pip
-            pip3 --version
-            pip3 install --user ansible
+            #pip3 --version
+            #pip3 install --user ansible
+            sudo apt-get install ansible
       - run:
           name: Install dependencies (part 2 AWSCLI)
           command: |
