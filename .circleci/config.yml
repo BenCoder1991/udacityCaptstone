@@ -198,7 +198,7 @@ jobs:
             pip3 --version
             pip3 install --user ansible
             export PATH=$PATH:$HOME/.local/bin
-            source .bashrc
+            # source .bashrc
             which ansible
       - run:
           name: Install dependencies (part 2 AWSCLI)
