@@ -107,7 +107,6 @@ jobs:
             npm install
             # npm install oauth-sign@^0.9.0
             npm audit fix --audit-level=critical --force
-            # If the "npm audit fix" command above could not fix all critical vulnerabilities, try “npm audit fix --force” again
             npm audit fix --force
             npm audit --audit-level=critical
 
@@ -123,11 +122,9 @@ jobs:
           command: |
             cd backend
             npm install
-            # npm install oauth-sign@^0.9.0
-            # npm audit fix --audit-level=critical --force
+            npm audit fix --audit-level=critical --force
             npm audit fix --force
-            # If the "npm audit fix" command above could not fix all critical vulnerabilities, try “npm audit fix --force” again
-            # npm audit --audit-level=critical
+            npm audit --audit-level=critical
 
   deploy-infrastructure:
       docker:
@@ -176,7 +173,7 @@ jobs:
             paths:
               - project/.circleci/ansible/inventory.txt
         - destroy-environment
-# reference: https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/.circleci/config.yml as reference .
+# reference: https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/.circleci/config.yml
 # reference for name taggin: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html#Using_Tags_CLI
   configure-infrastructure:
     docker:
@@ -218,10 +215,6 @@ jobs:
           command: |
             cd backend
             npm install
-            # Run and sve the migration output
-            # npm audit fix --audit-level=critical --force
-            # npm audit fix --force # try this, is occasionally there were unfixed vulnerabilities
-            # npm audit fix
             npm run migrations > migrations_dump.txt
       - save_cache:
           paths: 
@@ -329,7 +322,6 @@ jobs:
             npm i
             npm run build
             # c.f. https://knowledge.udacity.com/questions/389418
-            # try this approach as suggested
             echo ENVIRONMENT = production >> .env
             echo TYPEORM_CONNECTION=$TYPEORM_CONNECTION >> .env
             echo TYPEORM_ENTITIES=$TYPEORM_ENTITIES >> .env
@@ -340,9 +332,6 @@ jobs:
             echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> .env
             echo TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR >> .env
             cd ..
-            # trying this suggestion: https://knowledge.udacity.com/questions/736976
-            # cp package* ./dist
-            # Zip the directory
             tar -C backend -czvf artifact.tar.gz .
             echo "path of artifact.tar.gz is ..."
             ls -l
@@ -353,16 +342,12 @@ jobs:
             ansible-playbook -i inventory.txt deploy-backend.yml
       - destroy-environment
       - revert-migrations
-#      
-# Here's where you will add some code to rollback on failure 
-# check again
 
   smoke-test:
     docker:
       - image: node:14-alpine # python:3.7-alpine3.11
         user: root
     steps:
-      # Checkout code from git
       - checkout
       - attach_workspace: # reference: https://classroom.udacity.com/nanodegrees/nd9991/parts/12a332e4-2fa5-4233-80ca-b8a4f4791953/modules/4fee4e85-fc99-4307-9568-115fd713c77a/lessons/325e008a-6d4f-4e92-9dbf-8438ecb2775f/concepts/6ce89032-f71a-4249-9230-2f8c7c12d73f
           at: ~/
@@ -486,22 +471,22 @@ workflows:
           requires: [build-backend]
       - scan-frontend:
           requires: [build-frontend]
-      - deploy-infrastructure:
-          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-          filters:
-            branches:
-              only: [master]
-      - configure-infrastructure:
-          requires: [deploy-infrastructure]
-      - run-migrations:
-          requires: [configure-infrastructure]
-      - deploy-frontend:
-          requires: [run-migrations]
-      - deploy-backend:
-          requires: [run-migrations, deploy-frontend]
-      - smoke-test:
-          requires: [deploy-backend, deploy-frontend]
-      - cloudfront-update:
-          requires: [smoke-test]
-      - cleanup:
-          requires: [cloudfront-update]
+#      - deploy-infrastructure:
+#          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+#          filters:
+#            branches:
+#              only: [master]
+#      - configure-infrastructure:
+#          requires: [deploy-infrastructure]
+#      - run-migrations:
+#          requires: [configure-infrastructure]
+#      - deploy-frontend:
+#          requires: [run-migrations]
+#      - deploy-backend:
+#          requires: [run-migrations, deploy-frontend]
+#      - smoke-test:
+#          requires: [deploy-backend, deploy-frontend]
+#      - cloudfront-update:
+#          requires: [smoke-test]
+#      - cleanup:
+#          requires: [cloudfront-update]
