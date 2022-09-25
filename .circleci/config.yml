@@ -197,9 +197,9 @@ jobs:
             sudo apt-get -y install python3-pip
             pip3 --version
             pip3 install --user ansible
-            # export PATH="$PATH:/root/.local/bin"
+            export PATH="$PATH:/root/.local/bin"
             export PATH="$PATH:~/.local/bin"
-            # export PATH="$PATH:/root/.local/lib/python3.8/site-packages"
+            export PATH="$PATH:/root/.local/lib/python3.8/site-packages"
             # source .bashrc
             # source ~/.bashrc
             # cat ~/.bashrc
