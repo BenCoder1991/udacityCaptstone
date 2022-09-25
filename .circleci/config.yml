@@ -292,7 +292,7 @@ jobs:
                     
   deploy-backend:
     docker:
-      - image: python:3.8-alpine # node:14-alpine # python:3.7-alpine3.11 # maybe also: cimg/node:13.8.0
+      - image: amazon/aws-cli #python:3.8-alpine # node:14-alpine # python:3.7-alpine3.11 # maybe also: cimg/node:13.8.0
         user: root
     steps:
       - checkout
@@ -301,15 +301,23 @@ jobs:
       - run:
           name: Install dependencies # https://superuser.com/questions/1125969/how-to-install-npm-in-alpine-linux
           command: |
-            apk add --update tar gzip ansible
-            apk add --update npm 
-            apk update \
-            && apk --no-cache add curl \
-            && apk --no-cache add sudo \
-            && apk --no-cache add unzip \
-            && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
-            && unzip awscliv2.zip
-            sudo ./aws/install
+            yum install -y python3
+            yum install -y tar gzip
+            yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+            yum install -y ansible
+            # Reference:proceed as suggested here: https://knowledge.udacity.com/questions/754485
+            cd backend
+            curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
+            yum -y install nodejs
+#            apk add --update tar gzip ansible
+#            apk add --update npm 
+#            apk update \
+#            && apk --no-cache add curl \
+#            && apk --no-cache add sudo \
+#            && apk --no-cache add unzip \
+#            && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+#            && unzip awscliv2.zip
+#            sudo ./aws/install
             # try this per https://github.com/kyleknap/aws-cli/blob/source-proposal/proposals/source-install.md#alpine-linux
             #apk add --no-cache \
             #curl \
@@ -489,12 +497,12 @@ workflows:
               only: [master]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
-#      - run-migrations:
-#          requires: [configure-infrastructure]
-#      - deploy-frontend:
-#          requires: [run-migrations]
-#      - deploy-backend:
-#          requires: [run-migrations, deploy-frontend]
+      - run-migrations:
+          requires: [configure-infrastructure]
+      - deploy-frontend:
+          requires: [run-migrations]
+      - deploy-backend:
+          requires: [run-migrations, deploy-frontend]
 #      - smoke-test:
 #          requires: [deploy-backend, deploy-frontend]
 #      - cloudfront-update:
