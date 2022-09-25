@@ -173,36 +173,26 @@ jobs:
             paths:
               - project/.circleci/ansible/inventory.txt
         - destroy-environment
-# reference: https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/.circleci/config.yml
-# reference for name taggin: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html#Using_Tags_CLI
+  # reference: https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/.circleci/config.yml
   configure-infrastructure:
     docker:
-      - image: cimg/base:2021.04 # node:14-alpine # python:3.7-alpine3.11 # https://knowledge.udacity.com/questions/735873
+      - image: cimg/base:2021.04 # Reference: https://knowledge.udacity.com/questions/735873
         user: root
     steps:
       - checkout
       - add_ssh_keys: 
           fingerprint: ["36:c2:dc:b2:83:54:39:25:78:11:ac:3a:ae:56:26:22"]
-      - attach_workspace: # reference: https://classroom.udacity.com/nanodegrees/nd9991/parts/12a332e4-2fa5-4233-80ca-b8a4f4791953/modules/4fee4e85-fc99-4307-9568-115fd713c77a/lessons/325e008a-6d4f-4e92-9dbf-8438ecb2775f/concepts/6ce89032-f71a-4249-9230-2f8c7c12d73f
+      - attach_workspace:
           at: ~/
       - run: cat .circleci/ansible/inventory.txt
       - run:
-          name: Install dependencies # Reference for awscli # https://stackoverflow.com/a/67191348
+          name: Install dependencies
           command: |
             sudo sudo apt-get update
             sudo apt-get install -y tar gzip ansible python3 curl unzip
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             sudo ./aws/install
-            # apk add --update tar gzip ansible
-            # apk update \
-            # && apk --no-cache add curl \
-            # && apk --no-cache add sudo \
-            # && apk --no-cache add unzip \
-            # && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
-            # && unzip awscliv2.zip
-            # sudo ./aws/install
-            exit 1
       - run:
           name: Configure server
           command: |
@@ -215,6 +205,8 @@ jobs:
       - image: circleci/node:13.8.0
     steps:
       - checkout
+      - restore_cache:
+          keys: [migrations]
       - run:
           name: Run migrations
           command: |
@@ -227,48 +219,35 @@ jobs:
           key: memstash-substitute
       - run: cat ~/project/backend/migrations_dump.txt
       - run:
-          name: Send migration results to memstash
+          name: Send migration results to kvdb.io
           command: |
             if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
             then
               curl --insecure https://kvdb.io/8fcQHcAt7NSBhh9jZuqxU1/migration_${CIRCLE_WORKFLOW_ID:0:7} -d '1'
             fi
-      - destroy-environment
-      
-      # c.f. https://knowledge.udacity.com/questions/721098
   
   deploy-frontend:
     docker:
-      - image: amazon/aws-cli # doctrine/nodejs-aws-cli  # python:3.7-alpine3.11
+      - image: amazon/aws-cli
         user: root # c.f. https://knowledge.udacity.com/questions/804850
     steps:
       - checkout
+      - attach_workspace: # reference: https://classroom.udacity.com/nanodegrees/nd9991/parts/12a332e4-2fa5-4233-80ca-b8a4f4791953/modules/4fee4e85-fc99-4307-9568-115fd713c77a/lessons/325e008a-6d4f-4e92-9dbf-8438ecb2775f/concepts/6ce89032-f71a-4249-9230-2f8c7c12d73f
+          at: ~/
       - run:
-          name: Install dependencies (1) # needed according to https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-ansible-on-centos-7
-          # https://stackoverflow.com/questions/49606453/dockerfile-is-building-from-centos7-is-there-a-way-to-instruct-npm-to-be-inst 
-          # https://www.cyberciti.biz/faq/installing-rhel-epel-repo-on-centos-redhat-7-x/
-          # however issues may occur with nodesource
+          name: Install dependencies
           command: |
             yum install -y python3
-            # https://stackoverflow.com/questions/71043534/nodejs-16-dependency-issue-with-libuv
-            # yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-            # yum repolist
-            # yum install -y ansible
             yum install -y tar gzip
-            # yum -y install yum-skip-broken
-            # yum install -y nodejs npm --skip-broken
-            # use the following as suggested here: https://knowledge.udacity.com/questions/754485
+            # Reference:proceed as suggested here: https://knowledge.udacity.com/questions/754485
             cd frontend
             curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
             yum -y install nodejs
-      - attach_workspace: # reference: https://classroom.udacity.com/nanodegrees/nd9991/parts/12a332e4-2fa5-4233-80ca-b8a4f4791953/modules/4fee4e85-fc99-4307-9568-115fd713c77a/lessons/325e008a-6d4f-4e92-9dbf-8438ecb2775f/concepts/6ce89032-f71a-4249-9230-2f8c7c12d73f
-          at: ~/
       - run:
           name: Get backend url
           command: |
             echo $(tail -1  .circleci/ansible/inventory.txt)
             export BACKEND_IP=$(tail -1  .circleci/ansible/inventory.txt)
-            # export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --output text)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
             echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
@@ -281,6 +260,7 @@ jobs:
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+            exit 1 # test if it successfully destroy environment and reverts migrations.
       - destroy-environment
       - revert-migrations
                     
@@ -483,10 +463,10 @@ workflows:
               only: [master]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
-#      - run-migrations:
-#          requires: [configure-infrastructure]
-#      - deploy-frontend:
-#          requires: [run-migrations]
+      - run-migrations:
+          requires: [configure-infrastructure]
+      - deploy-frontend:
+          requires: [run-migrations]
 #      - deploy-backend:
 #          requires: [run-migrations, deploy-frontend]
 #      - smoke-test:
