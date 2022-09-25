@@ -176,7 +176,7 @@ jobs:
   # reference: https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/.circleci/config.yml
   configure-infrastructure:
     docker:
-      - image: amazon/aws-cli#cimg/base:current-20.04 # Reference: https://knowledge.udacity.com/questions/735873
+      - image: amazon/aws-cli # cimg/base:current-20.04 # Reference: https://knowledge.udacity.com/questions/735873
         user: root
     steps:
       - checkout
