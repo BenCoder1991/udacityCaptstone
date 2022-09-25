@@ -212,6 +212,8 @@ jobs:
             #which ansible
             #echo $PATH
             #pip3 show ansible
+      - attach_workspace:
+          at: ~/
 #      - run:
 #          name: Install dependencies (part 2 AWSCLI)
 #          command: |
