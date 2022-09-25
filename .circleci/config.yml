@@ -186,10 +186,16 @@ jobs:
           at: ~/
       - run: cat .circleci/ansible/inventory.txt
       - run:
-          name: Install dependencies
+          name: Install dependencies (part 1)
           command: |
-            sudo sudo apt-get update
+            sudo apt-get update
             sudo apt-get install -y tar gzip ansible python3 curl unzip
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
+      - run:
+          name: Install dependencies (part 2: AWSCLI)
+          command: |
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip awscliv2.zip
             sudo ./aws/install
@@ -266,7 +272,7 @@ jobs:
                     
   deploy-backend:
     docker:
-      - image: python:3.8-alpine # node:14-alpine # python:3.7-alpine3.11
+      - image: python:3.8-alpine # node:14-alpine # python:3.7-alpine3.11 # maybe also: cimg/node:13.8.0
         user: root
     steps:
       - checkout
