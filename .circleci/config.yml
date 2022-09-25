@@ -176,7 +176,7 @@ jobs:
   # reference: https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/.circleci/config.yml
   configure-infrastructure:
     docker:
-      - image: cimg/base:2021.04 # Reference: https://knowledge.udacity.com/questions/735873
+      - image: cimg/base:current-20.04 # Reference: https://knowledge.udacity.com/questions/735873
         user: root
     steps:
       - checkout
@@ -188,18 +188,20 @@ jobs:
       - run:
           name: Install dependencies (part 1)
           command: |
-            sudo apt-get update
-            sudo apt-get install -y tar 
-            sudo apt-get install -y gzip 
-            sudo apt-get install -y python3
-            sudo apt-get install -y curl 
-            sudo apt-get install -y unzip
-            sudo apt-get -y install python3-pip
-            pip3 --version
-            pip3 install --user ansible
-            export PATH="$PATH:/root/.local/bin"
-            export PATH="$PATH:~/.local/bin"
-            export PATH="$PATH:/root/.local/lib/python3.8/site-packages"
+            sudo apt update
+            sudo apt install -y tar 
+            sudo apt install -y gzip 
+            sudo apt install -y python3
+            sudo apt install -y curl 
+            sudo apt install -y unzip
+            sudo apt install -y ansible
+            which python
+            #sudo apt-get -y install python3-pip
+            #pip3 --version
+            #pip3 install --user ansible
+            #export PATH="$PATH:/root/.local/bin"
+            #export PATH="$PATH:~/.local/bin"
+            #export PATH="$PATH:/root/.local/lib/python3.8/site-packages"
             # source .bashrc
             # source ~/.bashrc
             # cat ~/.bashrc
