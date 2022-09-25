@@ -21,6 +21,8 @@ commands:
           when: on_fail
           command: |
             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
+            echo ${CIRCLE_WORKFLOW_ID:0:7}
+            echo $(curl --insecure  https://kvdb.io/8fcQHcAt7NSBhh9jZuqxU1/migration_${CIRCLE_WORKFLOW_ID:0:7} )
             SUCCESS=$(curl --insecure  https://kvdb.io/8fcQHcAt7NSBhh9jZuqxU1/migration_${CIRCLE_WORKFLOW_ID:0:7} )
             echo $SUCCESS
             if(( $SUCCESS==1 )); 
@@ -365,7 +367,7 @@ jobs:
 
   smoke-test:
     docker:
-      - image: node:14-alpine # python:3.7-alpine3.11
+      - image: amazon/aws-cli # node:14-alpine # python:3.7-alpine3.11
         user: root
     steps:
       - checkout
@@ -374,16 +376,23 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            apk add --update tar gzip ansible
-            apk add --update npm curl
-            apk update \
-            && apk --no-cache add curl \
-            && apk --no-cache add sudo \
-            && apk --no-cache add unzip \
-            && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
-            && unzip awscliv2.zip
-            sudo ./aws/install
-            apk add --no-cache \
+            yum install -y python3
+            yum install -y tar gzip
+            yum install -y curl
+            yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+            yum install -y ansible
+            curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
+            yum -y install nodejs
+#            apk add --update tar gzip ansible
+#            apk add --update npm curl
+#            apk update \
+#            && apk --no-cache add curl \
+#            && apk --no-cache add sudo \
+#            && apk --no-cache add unzip \
+#            && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+#            && unzip awscliv2.zip
+#            sudo ./aws/install
+#            apk add --no-cache \
             #curl \
             #make \
             #cmake \
@@ -426,7 +435,6 @@ jobs:
             else
               return 1
             fi
-            exit 1
       - destroy-environment
       - revert-migrations
       # Here's where you will add some code to rollback on failure  
