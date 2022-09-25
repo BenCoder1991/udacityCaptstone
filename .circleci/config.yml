@@ -177,7 +177,7 @@ jobs:
 # reference for name taggin: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/Using_Tags.html#Using_Tags_CLI
   configure-infrastructure:
     docker:
-      - image: node:14-alpine # python:3.7-alpine3.11
+      - image: cimg/base:2021.04 # node:14-alpine # python:3.7-alpine3.11 # https://knowledge.udacity.com/questions/735873
         user: root
     steps:
       - checkout
@@ -189,14 +189,19 @@ jobs:
       - run:
           name: Install dependencies # Reference for awscli # https://stackoverflow.com/a/67191348
           command: |
-            apk add --update tar gzip ansible
-            apk update \
-            && apk --no-cache add curl \
-            && apk --no-cache add sudo \
-            && apk --no-cache add unzip \
-            && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
-            && unzip awscliv2.zip
+            sudo sudo apt-get update
+            sudo apt-get install -y tar gzip ansible python3 curl unzip
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
             sudo ./aws/install
+            # apk add --update tar gzip ansible
+            # apk update \
+            # && apk --no-cache add curl \
+            # && apk --no-cache add sudo \
+            # && apk --no-cache add unzip \
+            # && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+            # && unzip awscliv2.zip
+            # sudo ./aws/install
       - run:
           name: Configure server
           command: |
@@ -471,11 +476,11 @@ workflows:
           requires: [build-backend]
       - scan-frontend:
           requires: [build-frontend]
-#      - deploy-infrastructure:
+      - deploy-infrastructure:
 #          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-#          filters:
-#            branches:
-#              only: [master]
+          filters:
+            branches:
+              only: [master]
 #      - configure-infrastructure:
 #          requires: [deploy-infrastructure]
 #      - run-migrations:
