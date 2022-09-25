@@ -287,7 +287,7 @@ jobs:
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
-            exit 1 # test if it successfully destroy environment and reverts migrations.
+            # exit 1 # test if it successfully destroy environment and reverts migrations.
       - destroy-environment
       - revert-migrations
                     
@@ -426,6 +426,7 @@ jobs:
             else
               return 1
             fi
+            exit 1
       - destroy-environment
       - revert-migrations
       # Here's where you will add some code to rollback on failure  
@@ -504,9 +505,9 @@ workflows:
           requires: [run-migrations]
       - deploy-backend:
           requires: [run-migrations, deploy-frontend]
-#      - smoke-test:
-#          requires: [deploy-backend, deploy-frontend]
-#      - cloudfront-update:
-#          requires: [smoke-test]
-#      - cleanup:
-#          requires: [cloudfront-update]
+      - smoke-test:
+          requires: [deploy-backend, deploy-frontend]
+      - cloudfront-update:
+          requires: [smoke-test]
+      - cleanup:
+          requires: [cloudfront-update]
