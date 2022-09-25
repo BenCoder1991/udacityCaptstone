@@ -182,9 +182,6 @@ jobs:
       - checkout
       - add_ssh_keys: 
           fingerprint: ["36:c2:dc:b2:83:54:39:25:78:11:ac:3a:ae:56:26:22"]
-      - attach_workspace:
-          at: ~/
-      - run: cat .circleci/ansible/inventory.txt
       - run:
           name: Install dependencies (part 1)
           command: |
@@ -214,6 +211,7 @@ jobs:
             #pip3 show ansible
       - attach_workspace:
           at: ~/
+      - run: cat .circleci/ansible/inventory.txt
 #      - run:
 #          name: Install dependencies (part 2 AWSCLI)
 #          command: |
