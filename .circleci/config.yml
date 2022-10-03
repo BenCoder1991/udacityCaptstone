@@ -30,7 +30,6 @@ commands:
               cd ~/project/backend
               npm install
               npm run migrations:revert
-              exit 1
             fi
             
 jobs:
@@ -342,6 +341,7 @@ jobs:
             export BACKEND_IP=$(tail -1  .circleci/ansible/inventory.txt)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
+            # removed new line to avoid losing api_url -> check if it needs fixing
             echo "here comes the new API url call"
             echo "${API_URL}"
             if curl "${API_URL}/api/status" | grep "ok"
