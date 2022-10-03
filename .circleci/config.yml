@@ -21,6 +21,7 @@ commands:
           when: on_fail
           command: |
             export SUCCESS=$(curl --insecure  https://kvdb.io/8fcQHcAt7NSBhh9jZuqxU1/migration_${CIRCLE_WORKFLOW_ID:0:7} )
+            echo ${CIRCLE_WORKFLOW_ID:0:7}
             echo $SUCCESS
             if(( $SUCCESS==1 )); 
             then
@@ -286,7 +287,7 @@ jobs:
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
-            # exit 1 # test if it successfully destroy environment and reverts migrations.
+            exit 1 # test if it successfully destroy environment and reverts migrations.
       - destroy-environment
       - revert-migrations
                     
