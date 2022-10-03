@@ -179,49 +179,22 @@ jobs:
   # reference: https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/.circleci/config.yml
   configure-infrastructure:
     docker:
-      - image: amazon/aws-cli # cimg/base:current-20.04 # Reference: https://knowledge.udacity.com/questions/735873
+      - image: amazon/aws-cli
         user: root
     steps:
       - checkout
       - add_ssh_keys: 
           fingerprint: ["36:c2:dc:b2:83:54:39:25:78:11:ac:3a:ae:56:26:22"]
       - run:
-          name: Install dependencies (part 1)
+          name: Install dependencies
           command: |
             yum install -y python3
             yum install -y tar gzip
-            # yum install epel-release
             yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
             yum install -y ansible
-            # sudo apt update
-            #sudo apt install -y tar 
-            #sudo apt install -y gzip 
-            #sudo apt install -y python3
-            #sudo apt install -y curl 
-            #sudo apt install -y unzip
-            #sudo apt install -y ansible
-            #which python
-            #sudo apt-get -y install python3-pip
-            #pip3 --version
-            #pip3 install --user ansible
-            #export PATH="$PATH:/root/.local/bin"
-            #export PATH="$PATH:~/.local/bin"
-            #export PATH="$PATH:/root/.local/lib/python3.8/site-packages"
-            # source .bashrc
-            # source ~/.bashrc
-            # cat ~/.bashrc
-            #which ansible
-            #echo $PATH
-            #pip3 show ansible
       - attach_workspace:
           at: ~/
       - run: cat .circleci/ansible/inventory.txt
-#      - run:
-#          name: Install dependencies (part 2 AWSCLI)
-#          command: |
-#            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-#            unzip awscliv2.zip
-#            sudo ./aws/install
       - run:
           name: Configure server
           command: |
@@ -291,20 +264,19 @@ jobs:
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
-            exit 1 # test if it successfully destroy environment and reverts migrations.
       - destroy-environment
       - revert-migrations
                     
   deploy-backend:
     docker:
-      - image: amazon/aws-cli #python:3.8-alpine # node:14-alpine # python:3.7-alpine3.11 # maybe also: cimg/node:13.8.0
+      - image: amazon/aws-cli 
         user: root
     steps:
       - checkout
       - add_ssh_keys: 
           fingerprint: ["36:c2:dc:b2:83:54:39:25:78:11:ac:3a:ae:56:26:22"]
       - run:
-          name: Install dependencies # https://superuser.com/questions/1125969/how-to-install-npm-in-alpine-linux
+          name: Install dependencies
           command: |
             yum install -y python3
             yum install -y tar gzip
@@ -314,29 +286,6 @@ jobs:
             cd backend
             curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
             yum -y install nodejs
-#            apk add --update tar gzip ansible
-#            apk add --update npm 
-#            apk update \
-#            && apk --no-cache add curl \
-#            && apk --no-cache add sudo \
-#            && apk --no-cache add unzip \
-#            && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
-#            && unzip awscliv2.zip
-#            sudo ./aws/install
-            # try this per https://github.com/kyleknap/aws-cli/blob/source-proposal/proposals/source-install.md#alpine-linux
-            #apk add --no-cache \
-            #curl \
-            #make \
-            #cmake \
-            #gcc \
-            #libc-dev \
-            #libffi-dev \
-            #openssl-dev \
-            #&& curl https://awscli.amazonaws.com/awscli-2.2.1.tar.gz | tar -xz \
-            #&& cd awscli-2.2.1 \
-            #&& ./configure --prefix=/opt/aws-cli/ --with-download-deps \
-            #&& make \
-            #&& make install
       - attach_workspace: # reference: https://classroom.udacity.com/nanodegrees/nd9991/parts/12a332e4-2fa5-4233-80ca-b8a4f4791953/modules/4fee4e85-fc99-4307-9568-115fd713c77a/lessons/325e008a-6d4f-4e92-9dbf-8438ecb2775f/concepts/6ce89032-f71a-4249-9230-2f8c7c12d73f
           at: ~/
       - run:
@@ -369,7 +318,7 @@ jobs:
 
   smoke-test:
     docker:
-      - image: amazon/aws-cli # node:14-alpine # python:3.7-alpine3.11
+      - image: amazon/aws-cli
         user: root
     steps:
       - checkout
@@ -383,38 +332,14 @@ jobs:
             yum install -y ansible
             curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
             yum -y install nodejs
-#            apk add --update tar gzip ansible
-#            apk add --update npm curl
-#            apk update \
-#            && apk --no-cache add curl \
-#            && apk --no-cache add sudo \
-#            && apk --no-cache add unzip \
-#            && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
-#            && unzip awscliv2.zip
-#            sudo ./aws/install
-#            apk add --no-cache \
-            #curl \
-            #make \
-            #cmake \
-            #gcc \
-            #libc-dev \
-            #libffi-dev \
-            #openssl-dev \
-            #&& curl https://awscli.amazonaws.com/awscli-2.2.1.tar.gz | tar -xz \
-            #&& cd awscli-2.2.1 \
-            #&& ./configure --prefix=/opt/aws-cli/ --with-download-deps \
-            #&& make \
-            #&& make install
       - run:
           name: Get backend url
           command: |
             # Fetch and prepare the BACKEND_IP env var
-            # export BACKEND_IP=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PublicIpAddress' --filters Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} --output text)
             echo $(tail -1  .circleci/ansible/inventory.txt)
             export BACKEND_IP=$(tail -1  .circleci/ansible/inventory.txt)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
-            # removed new line to avoid losing api_url -> check if it needs fixing
             echo "here comes the new API url call"
             echo "${API_URL}"
             if curl "${API_URL}/api/status" | grep "ok"
@@ -431,7 +356,7 @@ jobs:
             if curl -s ${URL} | grep "Welcome"
             then
                 # Change this to 0 after the job fails
-              return 1
+              return 0
             else
               return 1
             fi
@@ -460,7 +385,6 @@ jobs:
             --tags project=udapeople
       - destroy-environment
       - revert-migrations
-      # Here's where you will add some code to rollback on failure  
 
   cleanup:
     docker:
@@ -490,18 +414,18 @@ jobs:
 workflows:
   default:
     jobs:
-#      - build-frontend
-#      - build-backend
-#      - test-frontend:
-#          requires: [build-frontend]
-#      - test-backend:
-#          requires: [build-backend]
-#      - scan-backend:
-#          requires: [build-backend]
-#      - scan-frontend:
-#          requires: [build-frontend]
+      - build-frontend
+      - build-backend
+      - test-frontend:
+          requires: [build-frontend]
+      - test-backend:
+          requires: [build-backend]
+      - scan-backend:
+          requires: [build-backend]
+      - scan-frontend:
+          requires: [build-frontend]
       - deploy-infrastructure:
-#          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          requires: [test-frontend, test-backend, scan-frontend, scan-backend]
           filters:
             branches:
               only: [master]
