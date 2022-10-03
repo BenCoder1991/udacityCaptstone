@@ -240,6 +240,8 @@ jobs:
           command: |
             cd backend
             npm install
+            # reference: https://knowledge.udacity.com/?nanodegree=nd9991&page=1&project=729&query=No%20migrations%20are%20pending&rubric=3602
+            npm run migrations:revert
             npm run migrations > migrations_dump.txt
       - save_cache:
           paths: 
