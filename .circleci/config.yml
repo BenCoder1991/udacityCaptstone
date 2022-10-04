@@ -342,26 +342,27 @@ jobs:
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
             # removed new line to avoid losing api_url -> check if it needs fixing
+            # exit instead of return: https://stackoverflow.com/questions/4419952/difference-between-return-and-exit-in-bash-functions
             echo "here comes the new API url call"
             echo "${API_URL}"
-            if curl "${API_URL}/api/status" | grep "ok"; 
+            if curl "${API_URL}/api/status" | grep "ok"
             then
                 echo "${API_URL}/api/status"
-                return 0
+                exit 0
             else
-                return 1
+                exit 1
             fi
       - run:
           name: Frontend smoke test.
           command: |
             URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/#/employees"            
             echo ${URL} 
-            if curl -s ${URL} | grep "Welcome";
+            if curl -s ${URL} | grep "Welcome"
             then
                 # Change this to 0 after the job fails
-              return 0
+              exit 0
             else
-              return 1
+              exit 1
             fi
       - destroy-environment
       - revert-migrations
