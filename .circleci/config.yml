@@ -306,7 +306,6 @@ jobs:
             cd ..
             tar -C backend -czvf artifact.tar.gz .
             echo "path of artifact.tar.gz is ..."
-            ls -l
             pwd
             cd .circleci/ansible
             echo "Contents  of the inventory.txt file is -------"
@@ -342,7 +341,7 @@ jobs:
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
             # exit instead of return: https://stackoverflow.com/questions/4419952/difference-between-return-and-exit-in-bash-functions
-            echo "here comes the new API url call"
+            echo "here comes the new API url call ..."
             echo "${API_URL}"
             if curl "${API_URL}/api/status" | grep "ok"
             then
@@ -358,7 +357,7 @@ jobs:
             echo ${URL} 
             if curl -s ${URL} | grep "Welcome"
             then
-              exit 1
+              exit 0
             else
               exit 1
             fi
