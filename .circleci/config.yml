@@ -213,7 +213,7 @@ jobs:
           command: |
             cd backend
             npm install
-            # reference: https://knowledge.udacity.com/?nanodegree=nd9991&page=1&project=729&query=No%20migrations%20are%20pending&rubric=3602
+            # reference: https://knowledge.udacity.com/questions/726604 (in order to revert in case of re-run)
             npm run migrations:revert
             npm run migrations > migrations_dump.txt
       - save_cache:
@@ -244,7 +244,7 @@ jobs:
             cd frontend
             curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
             yum -y install nodejs
-      - attach_workspace: # reference: https://classroom.udacity.com/nanodegrees/nd9991/parts/12a332e4-2fa5-4233-80ca-b8a4f4791953/modules/4fee4e85-fc99-4307-9568-115fd713c77a/lessons/325e008a-6d4f-4e92-9dbf-8438ecb2775f/concepts/6ce89032-f71a-4249-9230-2f8c7c12d73f
+      - attach_workspace:
           at: ~/
       - run:
           name: Get backend url
@@ -285,7 +285,7 @@ jobs:
             cd backend
             curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
             yum -y install nodejs
-      - attach_workspace: # reference: https://classroom.udacity.com/nanodegrees/nd9991/parts/12a332e4-2fa5-4233-80ca-b8a4f4791953/modules/4fee4e85-fc99-4307-9568-115fd713c77a/lessons/325e008a-6d4f-4e92-9dbf-8438ecb2775f/concepts/6ce89032-f71a-4249-9230-2f8c7c12d73f
+      - attach_workspace:
           at: ~/
       - run:
           name: Deploy backend
@@ -331,7 +331,7 @@ jobs:
             yum install -y ansible
             curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
             yum -y install nodejs
-      - attach_workspace: # reference: https://classroom.udacity.com/nanodegrees/nd9991/parts/12a332e4-2fa5-4233-80ca-b8a4f4791953/modules/4fee4e85-fc99-4307-9568-115fd713c77a/lessons/325e008a-6d4f-4e92-9dbf-8438ecb2775f/concepts/6ce89032-f71a-4249-9230-2f8c7c12d73f
+      - attach_workspace:
           at: ~/
       - run:
           name: Get backend url
@@ -341,7 +341,6 @@ jobs:
             export BACKEND_IP=$(tail -1  .circleci/ansible/inventory.txt)
             export API_URL="http://${BACKEND_IP}:3030"
             echo "${API_URL}"
-            # removed new line to avoid losing api_url -> check if it needs fixing
             # exit instead of return: https://stackoverflow.com/questions/4419952/difference-between-return-and-exit-in-bash-functions
             echo "here comes the new API url call"
             echo "${API_URL}"
@@ -359,20 +358,17 @@ jobs:
             echo ${URL} 
             if curl -s ${URL} | grep "Welcome"
             then
-                # Change this to 0 after the job fails
               exit 0
             else
               exit 1
             fi
       - destroy-environment
       - revert-migrations
-      # Here's where you will add some code to rollback on failure  
 
   cloudfront-update:
     docker:
       - image: amazon/aws-cli
     steps:
-    # Checkout code from git
       - checkout
       - run:
           name: Install dependencies
