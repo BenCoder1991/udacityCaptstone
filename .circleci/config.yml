@@ -220,7 +220,8 @@ jobs:
             # Step 2:  
             # Authenticate & tag
             echo "Docker ID and Image: $dockerpath"
-            docker login 
+            # https://docs.docker.com/engine/reference/commandline/login/
+            docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
             docker tag nginxapp:latest $dockerpath:latest # according to docker standard documentation
             docker image ls
             # Step 3:
