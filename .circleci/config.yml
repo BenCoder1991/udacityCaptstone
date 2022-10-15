@@ -482,7 +482,7 @@ workflows:
   #        filters:
   #          branches:
   #            only: [master]
-      - build-docker-image:
+      - build-docker-image
   #        requires: [deploy-infrastructure]
   #    - configure-infrastructure:
   #        requires: [build-docker-image]
