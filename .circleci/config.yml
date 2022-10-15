@@ -142,14 +142,14 @@ jobs:
                 --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
                 --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
                 --tags project=udapeople
-        - run:
-            name: Ensure front-end infrastructure exist
-            command: |
-              aws cloudformation deploy \
-                --template-file .circleci/files/frontend.yml \
-                --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
-                --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
-                --tags project=udapeople
+ #       - run:
+#            name: Ensure front-end infrastructure exist
+#            command: |
+#              aws cloudformation deploy \
+#                --template-file .circleci/files/frontend.yml \
+#                --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
+#                --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
+#                --tags project=udapeople
         # reference: as per the tutorial in the lesson to add an IP to the inventory file
         - run:
             name: Add back-end ip to ansible inventory
@@ -176,6 +176,46 @@ jobs:
               - project/.circleci/ansible/inventory.txt
         - destroy-environment
   # reference: https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/.circleci/config.yml
+  # reference: https://circleci.com/blog/how-to-build-a-docker-image-on-circleci-2-0/
+  # https://circleci.com/docs/custom-images/
+  build-docker-image:
+    docker:
+      - image: docker:17.05.0-ce-git
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
+    steps:
+      - checkout
+      - run:
+          name: build docker image
+          command:  |
+            # Step 1:
+            docker build --tag=nginxapp .
+      - run:
+          name: list all docker images
+          command: |
+            # Step 2: 
+            # List docker images
+            # https://docs.docker.com/engine/reference/commandline/images/
+            docker images --all
+            # Step 1:
+      - run:
+          name: push image to docker
+          command:  |
+            # Create dockerpath
+            dockerpath="bencdr0/nginxapp"
+            # Step 2:  
+            # Authenticate & tag
+            echo "Docker ID and Image: $dockerpath"
+            docker login 
+            docker tag nginxapp:latest $dockerpath:latest # according to docker standard documentation
+            docker image ls
+            # Step 3:
+            # Push image to a docker repository
+            # according to cheat-sheet and standard documentation
+            docker push $dockerpath:latest
+            docker logout
+  
   configure-infrastructure:
     docker:
       - image: amazon/aws-cli
@@ -423,13 +463,15 @@ workflows:
   #        requires: [build-backend]
   #    - scan-frontend:
   #        requires: [build-frontend]
-  #    - deploy-infrastructure:
-  #        requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-  #        filters:
-  #          branches:
-  #            only: [master]
-  #    - configure-infrastructure:
-  #        requires: [deploy-infrastructure]
+      - deploy-infrastructure:
+          # requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+          filters:
+            branches:
+              only: [master]
+      - build-docker-image:
+          requires: [deploy-infrastructure]
+      - configure-infrastructure:
+          requires: [build-docker-image]
   #    - run-migrations:
   #        requires: [configure-infrastructure]
   #    - deploy-frontend:
