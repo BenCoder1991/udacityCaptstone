@@ -196,8 +196,12 @@ jobs:
               docker-compose==1.12.0 \
               awscli==1.11.76
       - run:
+          name: check docker version
+          command: |
+            which docker
+      - run:
           name: build docker image
-          command:  |
+          command: |
             # Step 1:
             docker build --tag=nginxapp .
       - run:
@@ -473,15 +477,15 @@ workflows:
   #        requires: [build-backend]
   #    - scan-frontend:
   #        requires: [build-frontend]
-      - deploy-infrastructure:
-          # requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-          filters:
-            branches:
-              only: [master]
+  #    - deploy-infrastructure:
+  #        # requires: [test-frontend, test-backend, scan-frontend, scan-backend]
+  #        filters:
+  #          branches:
+  #            only: [master]
       - build-docker-image:
-          requires: [deploy-infrastructure]
-      - configure-infrastructure:
-          requires: [build-docker-image]
+  #        requires: [deploy-infrastructure]
+  #    - configure-infrastructure:
+  #        requires: [build-docker-image]
   #    - run-migrations:
   #        requires: [configure-infrastructure]
   #    - deploy-frontend:
