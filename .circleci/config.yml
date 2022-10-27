@@ -147,7 +147,26 @@ jobs:
           cluster-name: << parameters.cluster-name >>
       - run:
           command: |
-            kubectl get services
+            # kubectl get services
+            # Assuming the Kubernetes cluster is ready
+            # kubectl get nodes
+            # Deploy an App from the Dockerhub to the Kubernetes Cluster
+            # kubectl create deploy nginx --image=sudkul/python-helloworld:v1.0.0
+            # See the status
+            # kubectl get deploy,rs,svc,pods
+            # Port forward 
+            # kubectl port-forward pod/python-helloworld-84857d9565-2598m --address 0.0.0.0 5000:5000
+            
+            dockerpath="bencdr0/nginxapp"
+            # Step 2
+            # Run the Docker Hub container with kubernetes
+            kubectl run nginxapp --image=$dockerpath --port=80 --labels app=nginxapp
+            # Step 3:
+            # List kubernetes pods
+            kubectl get pods
+            # Step 4:
+            # Forward the container port to a host
+            kubectl port-forward nginxapp 8000:80
           name: Test cluster
 
   deploy-infrastructure:
@@ -500,23 +519,25 @@ workflows:
   #        requires: [build-backend]
   #    - scan-frontend:
   #        requires: [build-frontend]
-      - aws-eks/create-cluster:
+     - build-docker-image:
+ #        requires: [deploy-infrastructure]
+     - aws-eks/create-cluster:
           cluster-name: my-eks-demo
+          requires: build-docker-image
       - test-cluster:
           cluster-name: my-eks-demo
           requires:
             - aws-eks/create-cluster
-      - aws-eks/delete-cluster:
-          cluster-name: my-eks-demo
-          requires:
-            - test-cluster
+  #    - aws-eks/delete-cluster:
+  #        cluster-name: my-eks-demo
+  #        requires:
+  #          - test-cluster
   #    - deploy-infrastructure:
   #        # requires: [test-frontend, test-backend, scan-frontend, scan-backend]
   #        filters:
   #          branches:
   #            only: [master]
-  #    - build-docker-image:
-  #        requires: [deploy-infrastructure]
+
   #    - configure-infrastructure:
   #        requires: [build-docker-image]
   #    - run-migrations:
