@@ -519,7 +519,7 @@ workflows:
   #        requires: [build-backend]
   #    - scan-frontend:
   #        requires: [build-frontend]
-     - build-docker-image:
+     - build-docker-image
  #        requires: [deploy-infrastructure]
      - aws-eks/create-cluster:
           cluster-name: my-eks-demo
