@@ -13,9 +13,10 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
-            aws s3 rm "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
-            aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
-            aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
+            aws-eks/delete-cluster
+            # aws s3 rm "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
+            # aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
+            # aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
             
   revert-migrations:
     description: Revert the last migration if successfully run in the current workflow.
@@ -143,10 +144,11 @@ jobs:
     steps:
       - kubernetes/install:
           kubectl-version: v1.22.0
-      - aws-eks/update-kubeconfig-with-authenticator:
-          cluster-name: << parameters.cluster-name >>
+      #- aws-eks/update-kubeconfig-with-authenticator:
+      #    cluster-name: << parameters.cluster-name >>
       - run:
           command: |
+            eksctl create cluster --name << parameters.cluster-name >> --zones=us-east-1a,us-east-1b,us-east-1c,us-east-1d
             # kubectl get services
             # Assuming the Kubernetes cluster is ready
             # kubectl get nodes
@@ -168,6 +170,7 @@ jobs:
             # Forward the container port to a host
             kubectl port-forward nginxapp 8000:80
           name: Test cluster
+      - destroy-environment
 
   deploy-infrastructure:
       docker:
