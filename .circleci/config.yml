@@ -530,7 +530,8 @@ workflows:
       - build-docker-image
       - aws-eks/create-cluster:
           cluster-name: my-eks-demo
-          requires: build-docker-image
+          requires: 
+            - build-docker-image
       - test-cluster:
           cluster-name: my-eks-demo
           requires:
