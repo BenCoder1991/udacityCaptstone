@@ -298,6 +298,10 @@ jobs:
             # Step 3:
             # List kubernetes pods
             kubectl get pods
+            kubectl get services
+            kubectl get nodes
+            # reference. https://stackoverflow.com/questions/53536907/kubectl-wait-for-condition-complete-timeout-30s
+            kubectl wait --for=condition=ready pod -l app=nginxapp
             # Step 4:
             # Forward the container port to a host
             kubectl port-forward nginxapp 8000:80
