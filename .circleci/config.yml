@@ -136,6 +136,7 @@ jobs:
   test-cluster:
     docker:
       - image: 'cimg/python:3.10'
+        user: root
     parameters:
       cluster-name:
         description: |
@@ -148,6 +149,10 @@ jobs:
       #    cluster-name: << parameters.cluster-name >>
       - run:
           command: |
+            ## Reference. https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html
+            curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+            sudo mv /tmp/eksctl /usr/local/bin
+            eksctl version
             eksctl create cluster --name << parameters.cluster-name >> --zones=us-east-1a,us-east-1b,us-east-1c,us-east-1d
             # kubectl get services
             # Assuming the Kubernetes cluster is ready
