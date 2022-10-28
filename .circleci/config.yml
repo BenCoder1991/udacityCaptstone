@@ -602,14 +602,15 @@ workflows:
           cluster-name: my-eks-demo
           requires:
             - build-docker-image
-  #    - aws-eks/create-cluster:
-  #        cluster-name: my-eks-demo
-  #        requires: 
-  #          - build-docker-image
       - test-cluster:
           cluster-name: my-eks-demo
           requires:
             - create-cluster
+  #    - aws-eks/create-cluster:
+  #        cluster-name: my-eks-demo
+  #        requires: 
+  #          - build-docker-image
+
   #    - aws-eks/delete-cluster:
   #        cluster-name: my-eks-demo
   #        requires:
