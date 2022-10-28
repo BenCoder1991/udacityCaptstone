@@ -279,7 +279,77 @@ jobs:
             docker push $dockerpath:latest
             docker logout
       - destroy-environment
+    # Reference.https://circleci.com/developer/orbs/orb/circleci/aws-eks         
+
+  create-cluster:
+    docker:
+      - image: 'cimg/python:3.10'
+        user: root
+    parameters:
+      cluster-name:
+        description: |
+          Name of the EKS cluster
+        type: string
+    steps:
+      - kubernetes/install:
+          kubectl-version: v1.22.0
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: << parameters.cluster-name >>
+      - run:
+          command: |
+            ## Reference. https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html
+            curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+            sudo mv /tmp/eksctl /usr/local/bin
+            eksctl version
+            eksctl create cluster --name << parameters.cluster-name >> --zones=us-east-1a,us-east-1b,us-east-1c,us-east-1d
+            eksctl get cluster --name << parameters.cluster-name  >>
+          name: Create cluster
+      - destroy-environment
   
+  test-cluster:
+    docker:
+      - image: 'cimg/python:3.10'
+        user: root
+    parameters:
+      cluster-name:
+        description: |
+          Name of the EKS cluster
+        type: string
+    steps:
+      - kubernetes/install:
+          kubectl-version: v1.22.0
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: << parameters.cluster-name >>
+      - run:
+          command: |
+            ## Reference. https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html
+            curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+            sudo mv /tmp/eksctl /usr/local/bin
+            eksctl version
+            # eksctl create cluster --name << parameters.cluster-name >> --zones=us-east-1a,us-east-1b,us-east-1c,us-east-1d
+            # kubectl get services
+            # Assuming the Kubernetes cluster is ready
+            # kubectl get nodes
+            # Deploy an App from the Dockerhub to the Kubernetes Cluster
+            # kubectl create deploy nginx --image=sudkul/python-helloworld:v1.0.0
+            # See the status
+            # kubectl get deploy,rs,svc,pods
+            # Port forward 
+            # kubectl port-forward pod/python-helloworld-84857d9565-2598m --address 0.0.0.0 5000:5000
+            
+            dockerpath="bencdr0/nginxapp"
+            # Step 2
+            # Run the Docker Hub container with kubernetes
+            kubectl run nginxapp --image=$dockerpath --port=80 --labels app=nginxapp
+            # Step 3:
+            # List kubernetes pods
+            kubectl get pods
+            # Step 4:
+            # Forward the container port to a host
+            kubectl port-forward nginxapp 8000:80
+          name: Test cluster
+      - destroy-environment
+
   configure-infrastructure:
     docker:
       - image: amazon/aws-cli
@@ -528,14 +598,18 @@ workflows:
   #    - scan-frontend:
   #        requires: [build-frontend]
       - build-docker-image
-      - aws-eks/create-cluster:
+      - create-cluster:
           cluster-name: my-eks-demo
-          requires: 
+          requires:
             - build-docker-image
+  #    - aws-eks/create-cluster:
+  #        cluster-name: my-eks-demo
+  #        requires: 
+  #          - build-docker-image
       - test-cluster:
           cluster-name: my-eks-demo
           requires:
-            - aws-eks/create-cluster
+            - create-cluster
   #    - aws-eks/delete-cluster:
   #        cluster-name: my-eks-demo
   #        requires:
