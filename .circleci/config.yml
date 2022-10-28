@@ -13,7 +13,7 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
-            aws-eks/delete-cluster
+            eksctl delete cluster --name=my-eks-demo
             # aws s3 rm "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
             # aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
             # aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
@@ -145,15 +145,15 @@ jobs:
     steps:
       - kubernetes/install:
           kubectl-version: v1.22.0
-      #- aws-eks/update-kubeconfig-with-authenticator:
-      #    cluster-name: << parameters.cluster-name >>
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: << parameters.cluster-name >>
       - run:
           command: |
             ## Reference. https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html
             curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
             sudo mv /tmp/eksctl /usr/local/bin
             eksctl version
-            eksctl create cluster --name << parameters.cluster-name >> --zones=us-east-1a,us-east-1b,us-east-1c,us-east-1d
+            # eksctl create cluster --name << parameters.cluster-name >> --zones=us-east-1a,us-east-1b,us-east-1c,us-east-1d
             # kubectl get services
             # Assuming the Kubernetes cluster is ready
             # kubectl get nodes
@@ -530,6 +530,7 @@ workflows:
       - build-docker-image
       - aws-eks/create-cluster:
           cluster-name: my-eks-demo
+          requires: build-docker-image
       - test-cluster:
           cluster-name: my-eks-demo
           requires:
