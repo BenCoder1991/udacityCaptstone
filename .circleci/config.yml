@@ -298,6 +298,7 @@ jobs:
             # kubectl run nginxapp --image=$dockerpath --port=80 --labels app=nginxapp
             kubectl create deployment nginxapp-minikube --image=bencdr0/nginxapp
             kubectl expose deployment nginxapp-minikube --type=LoadBalancer --port=8080
+            sleep 60
 
             # Step 3:
             # List kubernetes pods
@@ -305,8 +306,15 @@ jobs:
             kubectl get deployments
             kubectl get services
             kubectl get nodes
+            export NODE_ID=$(echo $(kubectl get pods) | cut -d ' ' -f 6) 
+            echo NODE_ID=$NODE_ID
+            export NODE_PORT=$(kubectl get service/nginxapp-minikube -o go-template='{{(index .spec.ports 0).nodePort}}')
+            echo NODE_PORT=$NODE_PORT
+            export external_IP=$(echo $( kubectl get services nginxapp-minikube) | cut -d ' ' -f 10)  
+            curl $external_IP:$NODE_PORT
+            
             # reference. https://stackoverflow.com/questions/53536907/kubectl-wait-for-condition-complete-timeout-30s
-            kubectl wait --for=condition=ready pod -l app=nginxapp
+            # kubectl wait --for=condition=ready pod -l app=nginxapp
             # Step 4:
             # Forward the container port to a host
             # kubectl port-forward nginxapp 8000:80
