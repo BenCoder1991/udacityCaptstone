@@ -255,7 +255,8 @@ jobs:
             curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
             sudo mv /tmp/eksctl /usr/local/bin
             eksctl version
-            eksctl create cluster --name << parameters.cluster-name >> --zones=us-east-1a,us-east-1b,us-east-1c,us-east-1d
+            # https://andresaaap.medium.com/testing-a-container-app-or-microservices-app-to-deploy-it-to-an-aws-eks-cluster-2b8778e22d21
+            eksctl create cluster --name << parameters.cluster-name >> --zones=us-east-1a,us-east-1b,us-east-1c,us-east-1d --node-type "t2.small" --nodes 2
             eksctl get cluster --name << parameters.cluster-name  >>
           name: Create cluster
       - destroy-environment
@@ -305,7 +306,7 @@ jobs:
             kubectl get services
             kubectl get nodes
             # reference. https://stackoverflow.com/questions/53536907/kubectl-wait-for-condition-complete-timeout-30s
-            # kubectl wait --for=condition=ready pod -l app=nginxapp
+            kubectl wait --for=condition=ready pod -l app=nginxapp
             # Step 4:
             # Forward the container port to a host
             # kubectl port-forward nginxapp 8000:80
