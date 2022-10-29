@@ -311,7 +311,7 @@ jobs:
             export NODE_PORT=$(kubectl get service/nginxapp-minikube -o go-template='{{(index .spec.ports 0).nodePort}}')
             echo NODE_PORT=$NODE_PORT
             export external_IP=$(echo $( kubectl get services nginxapp-minikube) | cut -d ' ' -f 10)  
-            curl $external_IP:$NODE_PORT
+            # curl $external_IP:$NODE_PORT
             
             # reference. https://stackoverflow.com/questions/53536907/kubectl-wait-for-condition-complete-timeout-30s
             # kubectl wait --for=condition=ready pod -l app=nginxapp
