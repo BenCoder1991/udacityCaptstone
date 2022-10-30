@@ -330,7 +330,7 @@ workflows:
           cluster-name: my-eks-demo
           requires:
             - create-cluster
-      - build-docker-image-after-update
+      - build-docker-image-after-update:
           requires:
             - initialize-cluster
       - update-cluster:
