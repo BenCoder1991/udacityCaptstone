@@ -334,6 +334,7 @@ workflows:
           requires:
             - initialize-cluster
       - update-cluster:
+          cluster-name: my-eks-demo
           requires:
             - build-docker-image-after-update
   # Reference EKS with circleci: https://circleci.com/developer/orbs/orb/circleci/aws-eks
