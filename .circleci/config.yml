@@ -6,7 +6,7 @@ orbs:
 
 commands:
   destroy-environment:
-    description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
+    description: Destroy cluster on fail
     parameters:
     steps:
       - run:
@@ -14,28 +14,6 @@ commands:
           when: on_fail
           command: |
             eksctl delete cluster --name=my-eks-demo
-            # aws s3 rm "s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7}" --recursive
-            # aws cloudformation delete-stack --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
-            # aws cloudformation delete-stack --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
-            
-  revert-migrations:
-    description: Revert the last migration if successfully run in the current workflow.
-    parameters:
-    steps:
-      - run:
-          name: Revert migrations
-          when: on_fail
-          command: |
-            export SUCCESS=$(curl --insecure  https://kvdb.io/8fcQHcAt7NSBhh9jZuqxU1/migration_${CIRCLE_WORKFLOW_ID:0:7} )
-            echo ${CIRCLE_WORKFLOW_ID:0:7}
-            echo $SUCCESS
-            echo https://kvdb.io/8fcQHcAt7NSBhh9jZuqxU1/migration_${CIRCLE_WORKFLOW_ID:0:7}
-            if(( $SUCCESS==1 )); 
-            then
-              cd ~/project/backend
-              npm install
-              npm run migrations:revert
-            fi
             
 jobs:
   build:
@@ -78,148 +56,6 @@ jobs:
             . venv/bin/activate
             make lint 
   
-  build-frontend:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - restore_cache:
-          keys: [frontend-build]
-      - run:
-          name: Build front-end
-          command: |
-            cd frontend
-            npm install
-            npm run build
-      - save_cache:
-          paths: [frontend/node_modules]
-          key: frontend-build
-
-  build-backend:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - restore_cache:
-          keys: [backend-build]
-      - run:
-          name: Back-end build
-          command: |
-            cd backend
-            npm install
-            npm run build
-      - save_cache:
-          paths: [backend/node_modules]
-          key: backend-build
-
-  test-frontend:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - restore_cache:
-          keys: [run-frontend-test]
-      - run:
-          name: Run frontend test
-          command: |
-            cd frontend
-            npm install
-            npm run test
-
-  test-backend:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - restore_cache:
-          keys: [run-backend-test]
-      - run:
-          name: Run backend test
-          command: |
-            cd backend
-            npm install
-            npm run test
-            
-  scan-frontend:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - restore_cache:
-          keys: [scan-frontend]
-      - run:
-          name: Scan frontend dependencies
-          command: |
-            cd frontend
-            npm install
-            # npm install oauth-sign@^0.9.0
-            npm audit fix --audit-level=critical --force
-            npm audit fix --force
-            npm audit --audit-level=critical
-
-  scan-backend:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - restore_cache:
-          keys: [scan-backend]
-      - run:
-          name: Scan backend dependencies
-          command: |
-            cd backend
-            npm install
-            npm audit fix --audit-level=critical --force
-            npm audit fix --force
-            npm audit --audit-level=critical
-
-  deploy-infrastructure:
-      docker:
-      - image: amazon/aws-cli
-      steps:
-        - checkout
-        - run: yum install -y tar gzip
-        - run:
-            name: Ensure back-end infrastructure exists
-            command: |
-              aws cloudformation deploy \
-                --template-file .circleci/files/backend.yml \
-                --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-                --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
-                --tags project=udapeople
- #       - run:
-#            name: Ensure front-end infrastructure exist
-#            command: |
-#              aws cloudformation deploy \
-#                --template-file .circleci/files/frontend.yml \
-#                --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
-#                --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"  \
-#                --tags project=udapeople
-        # reference: as per the tutorial in the lesson to add an IP to the inventory file
-        - run:
-            name: Add back-end ip to ansible inventory
-            command: |
-              cd .circleci/ansible
-              aws ec2 describe-instances \
-              --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} \
-              --output text >> inventory.txt
-        - run:
-            name: Add test to echo ip address
-            command: |
-              aws ec2 describe-instances \
-              --query 'Reservations[*].Instances[*].PublicIpAddress' \
-              --filters Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7} \
-              --output text
-        - run:
-            name: debug-inventory file
-            command:  |
-              cat .circleci/ansible/inventory.txt
-        - persist_to_workspace:
-            root: ~/
-            paths:
-              - project/.circleci/ansible/inventory.txt
-        - destroy-environment
   # reference: https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/.circleci/config.yml
   # reference: https://circleci.com/blog/how-to-build-a-docker-image-on-circleci-2-0/
   # https://circleci.com/docs/custom-images/
@@ -262,16 +98,18 @@ jobs:
           command:  |
             # Create dockerpath
             dockerpath="bencdr0/nginxapp"
+            
             # Step 2:  
             # Authenticate & tag
             echo "Docker ID and Image: $dockerpath"
+            
             # https://docs.docker.com/engine/reference/commandline/login/
             docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
             docker tag nginxapp:latest $dockerpath:latest # according to docker standard documentation
             docker image ls
+            
             # Step 3:
-            # Push image to a docker repository
-            # according to cheat-sheet and standard documentation
+            # Push image to a docker repository, according to cheat-sheet and standard documentation
             docker push $dockerpath:latest
             docker logout
       - destroy-environment
@@ -292,16 +130,19 @@ jobs:
       - run:
           command: |
             ## Reference. https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html
+            # Step 1: install EKSCTL
             curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
             sudo mv /tmp/eksctl /usr/local/bin
             eksctl version
+            
+            # Step 2: create EKS Cluster
             # https://andresaaap.medium.com/testing-a-container-app-or-microservices-app-to-deploy-it-to-an-aws-eks-cluster-2b8778e22d21
-            eksctl create cluster --name << parameters.cluster-name >> --zones=us-east-1a,us-east-1b,us-east-1c,us-east-1d --node-type "t2.small" --nodes 2
+            eksctl create cluster --name << parameters.cluster-name >> --zones=us-east-1a,us-east-1b,us-east-1c,us-east-1d --node-type "t2.medium" --nodes 4
             eksctl get cluster --name << parameters.cluster-name  >>
           name: Create cluster
       - destroy-environment
   
-  test-cluster:
+  initialize-cluster:
     docker:
       - image: 'cimg/python:3.10'
         user: root
@@ -318,30 +159,19 @@ jobs:
       - run:
           command: |
             ## Reference. https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html
+            # Step 1 -Install EKSCTL
             curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
             sudo mv /tmp/eksctl /usr/local/bin
             eksctl version
-            # eksctl create cluster --name << parameters.cluster-name >> --zones=us-east-1a,us-east-1b,us-east-1c,us-east-1d
-            # kubectl get services
-            # Assuming the Kubernetes cluster is ready
-            # kubectl get nodes
-            # Deploy an App from the Dockerhub to the Kubernetes Cluster
-            # kubectl create deploy nginx --image=sudkul/python-helloworld:v1.0.0
-            # See the status
-            # kubectl get deploy,rs,svc,pods
-            # Port forward 
-            # kubectl port-forward pod/python-helloworld-84857d9565-2598m --address 0.0.0.0 5000:5000
             
             dockerpath="bencdr0/nginxapp"
-            # Step 2
-            # Run the Docker Hub container with kubernetes
-            # kubectl run nginxapp --image=$dockerpath --port=80 --labels app=nginxapp
+            # Step 2 - Run the Docker Hub container with kubernetes
             kubectl create deployment nginxapp-minikube --image=bencdr0/nginxapp
             kubectl expose deployment nginxapp-minikube --type=LoadBalancer --port=8000
-            sleep 60
+           # sleep to allow full start-up
+           sleep 60
 
             # Step 3:
-            # List kubernetes pods
             kubectl get pods
             kubectl get deployments
             kubectl get services
@@ -351,305 +181,28 @@ jobs:
             export NODE_PORT=$(kubectl get service/nginxapp-minikube -o go-template='{{(index .spec.ports 0).nodePort}}')
             echo NODE_PORT=$NODE_PORT
             export external_IP=$(echo $( kubectl get services nginxapp-minikube) | cut -d ' ' -f 10)  
-            # curl $external_IP:$NODE_PORT
             #https://knowledge.udacity.com/questions/679601
             kubectl describe service
+            
             # workaround to delete the cluster for now as deletion was so error prone and lengthy otherwise.
             sleep 600
             eksctl delete cluster --name=my-eks-demo
-            
-            # reference. https://stackoverflow.com/questions/53536907/kubectl-wait-for-condition-complete-timeout-30s
-            # kubectl wait --for=condition=ready pod -l app=nginxapp
-            # Step 4:
-            # Forward the container port to a host
-            # kubectl port-forward nginxapp 8000:80
           name: Test cluster
       - destroy-environment
 
-  configure-infrastructure:
-    docker:
-      - image: amazon/aws-cli
-        user: root
-    steps:
-      - checkout
-      - add_ssh_keys: 
-          fingerprint: ["ab:d8:9f:9a:8f:65:29:63:83:21:e3:af:1f:44:6f:33"]
-      - run:
-          name: Install dependencies
-          command: |
-            yum install -y python3
-            yum install -y tar gzip
-            yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-            yum install -y ansible
-      - attach_workspace:
-          at: ~/
-      - run: cat .circleci/ansible/inventory.txt
-      - run:
-          name: Configure server
-          command: |
-            cd .circleci/ansible
-            ansible-playbook -i inventory.txt configure-server.yml
-      - destroy-environment     
-
-  run-migrations:
-    docker:
-      - image: circleci/node:13.8.0
-    steps:
-      - checkout
-      - restore_cache:
-          keys: [migrations]
-      - run:
-          name: Run migrations
-          command: |
-            cd backend
-            npm install
-            # reference: https://knowledge.udacity.com/questions/726604 (in order to revert in case of re-run)
-            npm run migrations:revert
-            npm run migrations > migrations_dump.txt
-      - save_cache:
-          paths: 
-            - ~/project/backend/migrations_dump.txt
-          key: memstash-substitute
-      - run: cat ~/project/backend/migrations_dump.txt
-      - run:
-          name: Send migration results to kvdb.io
-          command: |
-            if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
-            then
-              curl --insecure https://kvdb.io/8fcQHcAt7NSBhh9jZuqxU1/migration_${CIRCLE_WORKFLOW_ID:0:7} -d '1'
-            fi
-  
-  deploy-frontend:
-    docker:
-      - image: amazon/aws-cli
-        user: root # c.f. https://knowledge.udacity.com/questions/804850
-    steps:
-      - checkout
-      - run:
-          name: Install dependencies
-          command: |
-            yum install -y python3
-            yum install -y tar gzip
-            # Reference:proceed as suggested here: https://knowledge.udacity.com/questions/754485
-            cd frontend
-            curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
-            yum -y install nodejs
-      - attach_workspace:
-          at: ~/
-      - run:
-          name: Get backend url
-          command: |
-            echo $(tail -1  .circleci/ansible/inventory.txt)
-            export BACKEND_IP=$(tail -1  .circleci/ansible/inventory.txt)
-            export API_URL="http://${BACKEND_IP}:3030"
-            echo "${API_URL}"
-            echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
-            cat frontend/.env
-      - run:
-          name: Deploy frontend objects
-          command: |
-            cd frontend
-            npm install
-            npm run build
-            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
-            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
-      - destroy-environment
-      - revert-migrations
-                    
-  deploy-backend:
-    docker:
-      - image: amazon/aws-cli 
-        user: root
-    steps:
-      - checkout
-      - add_ssh_keys: 
-          fingerprint: ["ab:d8:9f:9a:8f:65:29:63:83:21:e3:af:1f:44:6f:33"]
-      - run:
-          name: Install dependencies
-          command: |
-            yum install -y python3
-            yum install -y tar gzip
-            yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-            yum install -y ansible
-            # Reference:proceed as suggested here: https://knowledge.udacity.com/questions/754485
-            cd backend
-            curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
-            yum -y install nodejs
-      - attach_workspace:
-          at: ~/
-      - run:
-          name: Deploy backend
-          command: |
-            cd backend
-            npm i
-            npm run build
-            # c.f. https://knowledge.udacity.com/questions/389418
-            echo ENVIRONMENT = production >> .env
-            echo TYPEORM_CONNECTION=$TYPEORM_CONNECTION >> .env
-            echo TYPEORM_ENTITIES=$TYPEORM_ENTITIES >> .env
-            echo TYPEORM_HOST=$TYPEORM_HOST >> .env
-            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> .env
-            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> .env
-            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> .env
-            echo TYPEORM_MIGRATIONS=./src/migrations/*.ts >> .env
-            echo TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR >> .env
-            cd ..
-            tar -C backend -czvf artifact.tar.gz .
-            echo "path of artifact.tar.gz is ..."
-            pwd
-            cd .circleci/ansible
-            echo "Contents  of the inventory.txt file is -------"
-            cat inventory.txt
-            ansible-playbook -i inventory.txt deploy-backend.yml
-      - destroy-environment
-      - revert-migrations
-
-  smoke-test:
-    docker:
-      - image: amazon/aws-cli
-        user: root
-    steps:
-      - checkout
-      - run:
-          name: Install dependencies
-          command: |
-            yum install -y python3
-            yum install -y tar gzip
-            yum install -y curl
-            yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-            yum install -y ansible
-            curl -sL https://rpm.nodesource.com/setup_lts.x | bash -
-            yum -y install nodejs
-      - attach_workspace:
-          at: ~/
-      - run:
-          name: Get backend url
-          command: |
-            # Fetch and prepare the BACKEND_IP env var
-            echo $(tail -1  .circleci/ansible/inventory.txt)
-            export BACKEND_IP=$(tail -1  .circleci/ansible/inventory.txt)
-            export API_URL="http://${BACKEND_IP}:3030"
-            echo "${API_URL}"
-            # exit instead of return: https://stackoverflow.com/questions/4419952/difference-between-return-and-exit-in-bash-functions
-            echo "here comes the new API url call ..."
-            echo "${API_URL}"
-            if curl "${API_URL}/api/status" | grep "ok"
-            then
-                echo "${API_URL}/api/status"
-                exit 0
-            else
-                exit 1
-            fi
-      - run:
-          name: Frontend smoke test.
-          command: |
-            URL="http://udapeople-${CIRCLE_WORKFLOW_ID:0:7}.s3-website-us-east-1.amazonaws.com/#/employees"            
-            echo ${URL} 
-            if curl -s ${URL} | grep "Welcome"
-            then
-              exit 0
-            else
-              exit 1
-            fi
-      - destroy-environment
-      - revert-migrations
-
-  cloudfront-update:
-    docker:
-      - image: amazon/aws-cli
-    steps:
-      - checkout
-      - run:
-          name: Install dependencies
-          command: |
-            yum install -y python3
-            yum install -y tar gzip
-      - run:
-          name: Update cloudfront distribution
-          command: |
-            aws cloudformation deploy \
-            --template-file .circleci/files/cloudfront.yml \
-            --stack-name InitialStack \
-            --parameter-overrides WorkflowID="udapeople-${CIRCLE_WORKFLOW_ID:0:7}" \
-            --tags project=udapeople
-      - destroy-environment
-      - revert-migrations
-
-  cleanup:
-    docker:
-      - image: amazon/aws-cli
-    steps:
-      - checkout
-      - run:
-          name: Get old stack workflow id Remove old stacks and files # per this suggestion: https://knowledge.udacity.com/questions/521264 
-          command: |
-            # Fetch the Old workflow ID
-            export OldWorkflowID=$(aws cloudformation \
-                    list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
-                    --no-paginate --output text)
-            echo OldWorkflowID: "${OldWorkflowID}"
-            echo CIRCLE_WORKFLOW_ID "${CIRCLE_WORKFLOW_ID:0:7}"
-            # Fetch the stack names.      
-            export STACKS=($(aws cloudformation list-stacks --query "StackSummaries[*].StackName" \
-                    --stack-status-filter CREATE_COMPLETE --no-paginate --output text)) 
-            echo Stack names: "${STACKS[@]}"
-            if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
-            then
-              aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
-              aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
-              aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
-            fi
-            
 workflows:
   default:
     jobs:
-  #    - build-frontend
-  #    - build-backend
-  #    - test-frontend:
-  #        requires: [build-frontend]
-  #    - test-backend:
-  #        requires: [build-backend]
-  #    - scan-backend:
-  #        requires: [build-backend]
-  #    - scan-frontend:
-  #        requires: [build-frontend]
-      - build-docker-image
+      - build
+      - build-docker-image:
+          requires: 
+            - build
       - create-cluster:
           cluster-name: my-eks-demo
           requires:
             - build-docker-image
-      - test-cluster:
+      - initialize-cluster:
           cluster-name: my-eks-demo
           requires:
             - create-cluster
-  #    - aws-eks/create-cluster:
-  #        cluster-name: my-eks-demo
-  #        requires: 
-  #          - build-docker-image
-
-  #    - aws-eks/delete-cluster:
-  #        cluster-name: my-eks-demo
-  #        requires:
-  #          - test-cluster
-  #    - deploy-infrastructure:
-  #        # requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-  #        filters:
-  #          branches:
-  #            only: [master]
-
-  #    - configure-infrastructure:
-  #        requires: [build-docker-image]
-  #    - run-migrations:
-  #        requires: [configure-infrastructure]
-  #    - deploy-frontend:
-  #        requires: [run-migrations]
-  #    - deploy-backend:
-  #        requires: [run-migrations, deploy-frontend]
-  #    - smoke-test:
-  #        requires: [deploy-backend, deploy-frontend]
-  #    - cloudfront-update:
-  #        requires: [smoke-test]
-  #    - cleanup:
-  #        requires: [cloudfront-update]
-  # again
   # Reference EKS with circleci: https://circleci.com/developer/orbs/orb/circleci/aws-eks
