@@ -263,8 +263,9 @@ jobs:
           name: pull image from docker
           command:  |
             docker pull bencdr0/nginxapp:latest
-            docker run -p 8000:80 bencdr0/nginxapp:latest
-            docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $INSTANCE_ID
+            docker run -p 8000:80 nginxapp
+            docker info
+            # docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $INSTANCE_ID
       - destroy-environment
     # Reference.https://circleci.com/developer/orbs/orb/circleci/aws-eks   
 
