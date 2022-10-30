@@ -140,7 +140,7 @@ jobs:
             
             # Step 2: create EKS Cluster
             # https://andresaaap.medium.com/testing-a-container-app-or-microservices-app-to-deploy-it-to-an-aws-eks-cluster-2b8778e22d21
-            eksctl create cluster --name << parameters.cluster-name >> --zones=us-east-1a,us-east-1b,us-east-1c,us-east-1d --node-type "t2.medium" --nodes 4
+            eksctl create cluster --name << parameters.cluster-name >> --zones=us-east-1a,us-east-1b,us-east-1c,us-east-1d --node-type "t2.xlarge" --nodes 4
             eksctl get cluster --name << parameters.cluster-name  >>
           name: Create cluster
       - destroy-environment
@@ -170,7 +170,9 @@ jobs:
             dockerpath="bencdr0/nginxapp"
             # Step 2 - Run the Docker Hub container with kubernetes
             kubectl create deployment nginxapp-minikube --image=bencdr0/nginxapp
-            kubectl expose deployment nginxapp-minikube --type=LoadBalancer --port=8000
+            # Reference: https://www.theserverside.com/blog/Coffee-Talk-Java-News-Stories-and-Opinions/Imperative-vs-declarative-Kubernetes-commands-Whats-the-difference
+            kubectl scale --replicas=3 deployment/nginxapp-minikube 
+            kubectl expose deployment nginxapp-minikube --type=LoadBalancer --port=8000 --target-port=80
             # sleep to allow full start-up
             sleep 60
 
