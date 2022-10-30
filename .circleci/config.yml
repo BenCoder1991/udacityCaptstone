@@ -196,7 +196,7 @@ jobs:
 workflows:
   default:
     jobs:
-      - build
+      # - build
       - build-docker-image:
           requires: 
             - build
