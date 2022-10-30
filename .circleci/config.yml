@@ -211,7 +211,10 @@ jobs:
             pip install \
               docker-compose==1.12.0 \
               awscli==1.11.76
-            apk --no-cache add curl
+              # https://superuser.com/questions/1720430/failed-to-run-curl-7-83-0-on-alpine
+              apk update
+              apk upgrade
+              apk add -U curl
       - run:
           name: update html file 
           command: |
