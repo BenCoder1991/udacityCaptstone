@@ -13,7 +13,7 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
-            eksctl delete cluster --name=my-eks-demo
+            eksctl delete cluster --name=udacity-capstone-cluster
             
 jobs:
   build:
@@ -58,8 +58,8 @@ jobs:
   
   # reference: https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/.circleci/config.yml
   # reference: https://circleci.com/blog/how-to-build-a-docker-image-on-circleci-2-0/
-  # https://circleci.com/docs/custom-images/
-  build-docker-image:
+  # reference: https://circleci.com/docs/custom-images/
+  build-docker-image-before-update:
     docker:
       - image: docker:17.05.0-ce-git
         auth:
@@ -96,23 +96,17 @@ jobs:
       - run:
           name: push image to docker
           command:  |
-            # Create dockerpath
+            # Step 1: Create dockerpath
             dockerpath="bencdr0/nginxapp"
-            
-            # check for docker scan:
-            # docker scan --version
-            
-            # Step 2:  
-            # Authenticate & tag
             echo "Docker ID and Image: $dockerpath"
             
+            # Step 2: Authenticate & tag
             # https://docs.docker.com/engine/reference/commandline/login/
             docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
             docker tag nginxapp:latest $dockerpath:latest # according to docker standard documentation
             docker image ls
             
-            # Step 3:
-            # Push image to a docker repository, according to cheat-sheet and standard documentation
+            # Step 3: Push image to a docker repository, according to cheat-sheet and standard documentation
             docker push $dockerpath:latest
             docker logout
       - destroy-environment
@@ -139,7 +133,7 @@ jobs:
             eksctl version
             
             # Step 2: create EKS Cluster
-            # https://andresaaap.medium.com/testing-a-container-app-or-microservices-app-to-deploy-it-to-an-aws-eks-cluster-2b8778e22d21
+            # Reference: https://andresaaap.medium.com/testing-a-container-app-or-microservices-app-to-deploy-it-to-an-aws-eks-cluster-2b8778e22d21
             eksctl create cluster --name << parameters.cluster-name >> --zones=us-east-1a,us-east-1b,us-east-1c,us-east-1d --node-type "t2.xlarge" --nodes 4
             eksctl get cluster --name << parameters.cluster-name  >>
           name: Create cluster
@@ -173,29 +167,33 @@ jobs:
             # Reference: https://www.theserverside.com/blog/Coffee-Talk-Java-News-Stories-and-Opinions/Imperative-vs-declarative-Kubernetes-commands-Whats-the-difference
             kubectl scale --replicas=3 deployment/nginxapp-deployment 
             kubectl expose deployment nginxapp-deployment --type=LoadBalancer --port=8000 --target-port=80
+            
             # sleep to allow full start-up
             sleep 60
 
-            # Step 3:
+            # Step 3 - List all relevant pod, deployment, service, node information to debug
             kubectl get pods
             kubectl get deployments
             kubectl get services
             kubectl get nodes
+            kubectl describe service
+
+            # Step 4 - Mini Smoke test and address/port diagnostics
             export NODE_ID=$(echo $(kubectl get pods) | cut -d ' ' -f 6) 
             echo NODE_ID=$NODE_ID
             export NODE_PORT=$(kubectl get service/nginxapp-deployment -o go-template='{{(index .spec.ports 0).nodePort}}')
             echo NODE_PORT=$NODE_PORT
             export external_IP=$(echo $( kubectl get services nginxapp-deployment) | cut -d ' ' -f 10)  
-            #https://knowledge.udacity.com/questions/679601
-            kubectl describe service
-            
-            # workaround to delete the cluster for now as deletion was so error prone and lengthy otherwise.
             sleep 60
+            
+            # Mini smoke test, curl port 8000 (reference: https://knowledge.udacity.com/questions/679601)
             curl $external_IP:8000
-            # eksctl delete cluster --name=my-eks-demo
           name: Test cluster
       - destroy-environment
-
+  
+  # reference: https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/.circleci/config.yml
+  # reference: https://circleci.com/blog/how-to-build-a-docker-image-on-circleci-2-0/
+  # reference: https://circleci.com/docs/custom-images/
   build-docker-image-after-update:
     docker:
       - image: docker:17.05.0-ce-git
@@ -220,8 +218,12 @@ jobs:
       - run:
           name: check docker version
           command: |
+            echo "----------------index.html before change----------------"
+            cat index.html
             mv index.html index_old.html
             mv index_new.html index.html
+            echo "----------------index.html after change----------------"
+            cat index.html
       - run:
           name: build docker image
           command: |
@@ -283,35 +285,28 @@ jobs:
             eksctl version
             
             dockerpath="bencdr0/nginxapp"
-            # Step 2 - Run the Docker Hub container with kubernetes
-            # kubectl create deployment nginxapp-deployment --image=bencdr0/nginxapp
-            # Reference: https://www.theserverside.com/blog/Coffee-Talk-Java-News-Stories-and-Opinions/Imperative-vs-declarative-Kubernetes-commands-Whats-the-difference
-            # kubectl scale --replicas=3 deployment/nginxapp-deployment 
-            # kubectl expose deployment nginxapp-deployment --type=LoadBalancer --port=8000 --target-port=80
-            # sleep to allow full start-up
-            # https://kubernetes.io/docs/tutorials/kubernetes-basics/update/update-interactive/
+            # Step 2 - Apply the new image
+            # Reference: https://kubernetes.io/docs/tutorials/kubernetes-basics/update/update-interactive/
             kubectl set image deployments/nginxapp-deployment nginxapp=bencdr0/nginxapp            
+            
+            # Sleep to allow for startup
             sleep 60
+
+            # see rollout status
             kubectl rollout status deployments/nginxapp-deployment
 
 
-            # Step 3:
-            kubectl get pods
-            kubectl get deployments
-            kubectl get services
-            kubectl get nodes
+            # Step 3 - Mini Smoke test and address/port diagnostics
             export NODE_ID=$(echo $(kubectl get pods) | cut -d ' ' -f 6) 
             echo NODE_ID=$NODE_ID
             export NODE_PORT=$(kubectl get service/nginxapp-deployment -o go-template='{{(index .spec.ports 0).nodePort}}')
             echo NODE_PORT=$NODE_PORT
             export external_IP=$(echo $( kubectl get services nginxapp-deployment) | cut -d ' ' -f 10)  
-            #https://knowledge.udacity.com/questions/679601
-            kubectl describe service
-            
-            # workaround to delete the cluster for now as deletion was so error prone and lengthy otherwise.
             sleep 60
+            
+            # Mini smoke test, curl port 8000 (reference: https://knowledge.udacity.com/questions/679601)
             curl $external_IP:8000
-            eksctl delete cluster --name=my-eks-demo
+            eksctl delete cluster --name=<< parameters.cluster-name >>
           name: Test cluster
       - destroy-environment
   
@@ -332,35 +327,34 @@ jobs:
       - run:
           command: |
             ## Reference. https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html
-            # Step 1 -Install EKSCTL
+            # Step 1: Install EKSCTL
             curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
             sudo mv /tmp/eksctl /usr/local/bin
             eksctl version
-            # helper job to delete infrastructure to compensate for local eksctl unavailability
-            eksctl delete cluster --name=my-eks-demo
+            
+            # Step 2: Delete cluster = helper job to delete infrastructure to compensate for local eksctl unavailability
+            eksctl delete cluster --name=<< parameters.cluster-name >>
 
 workflows:
   default:
     jobs:
       # - build
-      - build-docker-image
+      # - build-docker-image-before-update
       #    requires: 
       #      - build
-      - create-cluster:
-          cluster-name: my-eks-demo
-          requires:
-            - build-docker-image
-      - initialize-cluster:
-          cluster-name: my-eks-demo
-          requires:
-            - create-cluster
-      - build-docker-image-after-update:
-          requires:
-            - initialize-cluster
-      - update-cluster:
-          cluster-name: my-eks-demo
-          requires:
-            - build-docker-image-after-update
+      # - create-cluster:
+      #    cluster-name: udacity-capstone-cluster
+      #    requires:
+      #      - build-docker-image-before-update
+      #- initialize-cluster:
+      #    cluster-name: udacity-capstone-cluster
+      #    requires:
+      #      - create-cluster
+      - build-docker-image-after-update
+      #    requires:
+      #      - initialize-cluster
+      #- update-cluster:
+      #    cluster-name: udacity-capstone-cluster
+      #    requires:
+      #      - build-docker-image-after-update
       # - delete-cluster
-      
-  # Reference EKS with circleci: https://circleci.com/developer/orbs/orb/circleci/aws-eks
