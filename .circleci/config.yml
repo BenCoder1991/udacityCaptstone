@@ -198,8 +198,8 @@ workflows:
     jobs:
       # - build
       - build-docker-image:
-          requires: 
-            - build
+      #    requires: 
+      #      - build
       - create-cluster:
           cluster-name: my-eks-demo
           requires:
