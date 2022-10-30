@@ -191,7 +191,7 @@ jobs:
             
             # workaround to delete the cluster for now as deletion was so error prone and lengthy otherwise.
             sleep 300
-            curl $external_IP:$NODE_PORT
+            curl $external_IP:8000
             # eksctl delete cluster --name=my-eks-demo
           name: Test cluster
       - destroy-environment
@@ -310,10 +310,34 @@ jobs:
             
             # workaround to delete the cluster for now as deletion was so error prone and lengthy otherwise.
             sleep 300
-            curl $external_IP:$NODE_PORT
+            curl $external_IP:8000
             eksctl delete cluster --name=my-eks-demo
           name: Test cluster
       - destroy-environment
+  
+  delete-cluster:
+    docker:
+      - image: 'cimg/python:3.10'
+        user: root
+    parameters:
+      cluster-name:
+        description: |
+          Name of the EKS cluster
+        type: string
+    steps:
+      - kubernetes/install:
+          kubectl-version: v1.22.0
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: << parameters.cluster-name >>
+      - run:
+          command: |
+            ## Reference. https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html
+            # Step 1 -Install EKSCTL
+            curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+            sudo mv /tmp/eksctl /usr/local/bin
+            eksctl version
+            # helper job to delete infrastructure to compensate for local eksctl unavailability
+            eksctl delete cluster --name=my-eks-demo
 
 workflows:
   default:
@@ -337,4 +361,6 @@ workflows:
           cluster-name: my-eks-demo
           requires:
             - build-docker-image-after-update
+      # - delete-cluster
+      
   # Reference EKS with circleci: https://circleci.com/developer/orbs/orb/circleci/aws-eks

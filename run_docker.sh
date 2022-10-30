@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-## Complete the following steps to get Docker running locally
-## Reference: https://www.docker.com/sites/default/files/d8/2019-09/docker-cheat-sheet.pdf
+## Helper sheet to test with Docker locally
+## Reference: https://www.docker.com/sites/default/files/d8/2019-09/docker-cheat-sheet.pdf and previous microservices submission
 
 # step 0:
 # make install
