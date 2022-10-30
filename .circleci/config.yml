@@ -99,6 +99,9 @@ jobs:
             # Create dockerpath
             dockerpath="bencdr0/nginxapp"
             
+            # check for docker scan:
+            docker scan --version
+            
             # Step 2:  
             # Authenticate & tag
             echo "Docker ID and Image: $dockerpath"
@@ -168,8 +171,8 @@ jobs:
             # Step 2 - Run the Docker Hub container with kubernetes
             kubectl create deployment nginxapp-minikube --image=bencdr0/nginxapp
             kubectl expose deployment nginxapp-minikube --type=LoadBalancer --port=8000
-           # sleep to allow full start-up
-           sleep 60
+            # sleep to allow full start-up
+            sleep 60
 
             # Step 3:
             kubectl get pods
