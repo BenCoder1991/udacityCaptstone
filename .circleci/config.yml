@@ -190,7 +190,127 @@ jobs:
             kubectl describe service
             
             # workaround to delete the cluster for now as deletion was so error prone and lengthy otherwise.
-            sleep 600
+            sleep 300
+            curl $external_IP:$NODE_PORT
+            # eksctl delete cluster --name=my-eks-demo
+          name: Test cluster
+      - destroy-environment
+
+  build-docker-image-after-update:
+    docker:
+      - image: docker:17.05.0-ce-git
+        auth:
+          username: $DOCKERHUB_USERNAME
+          password: $DOCKERHUB_PASSWORD  # context / project UI env-var reference
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Install dependencies
+          command: |
+            apk add --no-cache \
+              py-pip=9.0.0-r1
+            pip install \
+              docker-compose==1.12.0 \
+              awscli==1.11.76
+      - run:
+          name: update html file 
+          command: |
+            which docker
+      - run:
+          name: check docker version
+          command: |
+            mv index.html index_old.html
+            mv index_new.html index.html
+      - run:
+          name: build docker image
+          command: |
+            # Step 1:
+            docker build --tag=nginxapp .
+      - run:
+          name: list all docker images
+          command: |
+            # Step 2: 
+            # List docker images
+            # https://docs.docker.com/engine/reference/commandline/images/
+            docker images --all
+            # Step 1:
+      - run:
+          name: push image to docker
+          command:  |
+            # Create dockerpath
+            dockerpath="bencdr0/nginxapp"
+            
+            # check for docker scan:
+            # docker scan --version
+            
+            # Step 2:  
+            # Authenticate & tag
+            echo "Docker ID and Image: $dockerpath"
+            
+            # https://docs.docker.com/engine/reference/commandline/login/
+            docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
+            docker tag nginxapp:latest $dockerpath:latest # according to docker standard documentation
+            docker image ls
+            
+            # Step 3:
+            # Push image to a docker repository, according to cheat-sheet and standard documentation
+            docker push $dockerpath:latest
+            docker logout
+      - destroy-environment
+    # Reference.https://circleci.com/developer/orbs/orb/circleci/aws-eks   
+
+  update-cluster:
+    docker:
+      - image: 'cimg/python:3.10'
+        user: root
+    parameters:
+      cluster-name:
+        description: |
+          Name of the EKS cluster
+        type: string
+    steps:
+      - kubernetes/install:
+          kubectl-version: v1.22.0
+      - aws-eks/update-kubeconfig-with-authenticator:
+          cluster-name: << parameters.cluster-name >>
+      - run:
+          command: |
+            ## Reference. https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html
+            # Step 1 -Install EKSCTL
+            curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+            sudo mv /tmp/eksctl /usr/local/bin
+            eksctl version
+            
+            dockerpath="bencdr0/nginxapp"
+            # Step 2 - Run the Docker Hub container with kubernetes
+            # kubectl create deployment nginxapp-minikube --image=bencdr0/nginxapp
+            # Reference: https://www.theserverside.com/blog/Coffee-Talk-Java-News-Stories-and-Opinions/Imperative-vs-declarative-Kubernetes-commands-Whats-the-difference
+            # kubectl scale --replicas=3 deployment/nginxapp-minikube 
+            # kubectl expose deployment nginxapp-minikube --type=LoadBalancer --port=8000 --target-port=80
+            # sleep to allow full start-up
+            # https://kubernetes.io/docs/tutorials/kubernetes-basics/update/update-interactive/
+            kubectl set image deployments/nginxapp-minikube nginxapp-minikube=bencdr0/nginxapp            
+            sleep 60
+            kubectl rollout status deployments/knginxapp-minikube
+
+
+            # Step 3:
+            kubectl get pods
+            kubectl get deployments
+            kubectl get services
+            kubectl get nodes
+            export NODE_ID=$(echo $(kubectl get pods) | cut -d ' ' -f 6) 
+            echo NODE_ID=$NODE_ID
+            export NODE_PORT=$(kubectl get service/nginxapp-minikube -o go-template='{{(index .spec.ports 0).nodePort}}')
+            echo NODE_PORT=$NODE_PORT
+            export external_IP=$(echo $( kubectl get services nginxapp-minikube) | cut -d ' ' -f 10)  
+            #https://knowledge.udacity.com/questions/679601
+            kubectl describe service
+            
+            # workaround to delete the cluster for now as deletion was so error prone and lengthy otherwise.
+            sleep 300
+            curl $external_IP:$NODE_PORT
             eksctl delete cluster --name=my-eks-demo
           name: Test cluster
       - destroy-environment
@@ -210,4 +330,10 @@ workflows:
           cluster-name: my-eks-demo
           requires:
             - create-cluster
+      - build-docker-image-after-update
+          requires:
+            - initialize-cluster
+      - update-cluster:
+          requires:
+            - build-docker-image-after-update
   # Reference EKS with circleci: https://circleci.com/developer/orbs/orb/circleci/aws-eks
