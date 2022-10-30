@@ -169,10 +169,10 @@ jobs:
             
             dockerpath="bencdr0/nginxapp"
             # Step 2 - Run the Docker Hub container with kubernetes
-            kubectl create deployment nginxapp-minikube --image=bencdr0/nginxapp
+            kubectl create deployment nginxapp-deployment --image=bencdr0/nginxapp
             # Reference: https://www.theserverside.com/blog/Coffee-Talk-Java-News-Stories-and-Opinions/Imperative-vs-declarative-Kubernetes-commands-Whats-the-difference
-            kubectl scale --replicas=3 deployment/nginxapp-minikube 
-            kubectl expose deployment nginxapp-minikube --type=LoadBalancer --port=8000 --target-port=80
+            kubectl scale --replicas=3 deployment/nginxapp-deployment 
+            kubectl expose deployment nginxapp-deployment --type=LoadBalancer --port=8000 --target-port=80
             # sleep to allow full start-up
             sleep 60
 
@@ -183,9 +183,9 @@ jobs:
             kubectl get nodes
             export NODE_ID=$(echo $(kubectl get pods) | cut -d ' ' -f 6) 
             echo NODE_ID=$NODE_ID
-            export NODE_PORT=$(kubectl get service/nginxapp-minikube -o go-template='{{(index .spec.ports 0).nodePort}}')
+            export NODE_PORT=$(kubectl get service/nginxapp-deployment -o go-template='{{(index .spec.ports 0).nodePort}}')
             echo NODE_PORT=$NODE_PORT
-            export external_IP=$(echo $( kubectl get services nginxapp-minikube) | cut -d ' ' -f 10)  
+            export external_IP=$(echo $( kubectl get services nginxapp-deployment) | cut -d ' ' -f 10)  
             #https://knowledge.udacity.com/questions/679601
             kubectl describe service
             
@@ -284,15 +284,15 @@ jobs:
             
             dockerpath="bencdr0/nginxapp"
             # Step 2 - Run the Docker Hub container with kubernetes
-            # kubectl create deployment nginxapp-minikube --image=bencdr0/nginxapp
+            # kubectl create deployment nginxapp-deployment --image=bencdr0/nginxapp
             # Reference: https://www.theserverside.com/blog/Coffee-Talk-Java-News-Stories-and-Opinions/Imperative-vs-declarative-Kubernetes-commands-Whats-the-difference
-            # kubectl scale --replicas=3 deployment/nginxapp-minikube 
-            # kubectl expose deployment nginxapp-minikube --type=LoadBalancer --port=8000 --target-port=80
+            # kubectl scale --replicas=3 deployment/nginxapp-deployment 
+            # kubectl expose deployment nginxapp-deployment --type=LoadBalancer --port=8000 --target-port=80
             # sleep to allow full start-up
             # https://kubernetes.io/docs/tutorials/kubernetes-basics/update/update-interactive/
-            kubectl set image deployments/nginxapp-minikube nginxapp-minikube=bencdr0/nginxapp            
+            kubectl set image deployments/nginxapp-deployment nginxapp=bencdr0/nginxapp            
             sleep 60
-            kubectl rollout status deployments/knginxapp-minikube
+            kubectl rollout status deployments/knginxapp-deployment
 
 
             # Step 3:
@@ -302,9 +302,9 @@ jobs:
             kubectl get nodes
             export NODE_ID=$(echo $(kubectl get pods) | cut -d ' ' -f 6) 
             echo NODE_ID=$NODE_ID
-            export NODE_PORT=$(kubectl get service/nginxapp-minikube -o go-template='{{(index .spec.ports 0).nodePort}}')
+            export NODE_PORT=$(kubectl get service/nginxapp-deployment -o go-template='{{(index .spec.ports 0).nodePort}}')
             echo NODE_PORT=$NODE_PORT
-            export external_IP=$(echo $( kubectl get services nginxapp-minikube) | cut -d ' ' -f 10)  
+            export external_IP=$(echo $( kubectl get services nginxapp-deployment) | cut -d ' ' -f 10)  
             #https://knowledge.udacity.com/questions/679601
             kubectl describe service
             
