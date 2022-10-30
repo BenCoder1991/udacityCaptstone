@@ -262,9 +262,9 @@ jobs:
       - run:
           name: pull image from docker
           command:  |
-          docker pull bencdr0/nginxapp:latest
-          docker run -p 8000:80 bencdr0/nginxapp:latest
-          curl localhost:8000
+            docker pull bencdr0/nginxapp:latest
+            docker run -p 8000:80 bencdr0/nginxapp:latest
+            curl localhost:8000
       - destroy-environment
     # Reference.https://circleci.com/developer/orbs/orb/circleci/aws-eks   
 
