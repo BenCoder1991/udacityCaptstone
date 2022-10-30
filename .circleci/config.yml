@@ -270,8 +270,8 @@ jobs:
             docker info
 
             docker run -d -p 8000:80 nginxapp
-            docker info
-            curl http://localhost:8000
+            docker container ls
+            # curl http://localhost:8000
             # docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $INSTANCE_ID
       - destroy-environment
     # Reference.https://circleci.com/developer/orbs/orb/circleci/aws-eks   
