@@ -197,7 +197,7 @@ workflows:
   default:
     jobs:
       # - build
-      - build-docker-image:
+      - build-docker-image
       #    requires: 
       #      - build
       - create-cluster:
