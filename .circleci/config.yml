@@ -371,4 +371,5 @@ workflows:
       #    cluster-name: udacity-capstone-cluster
       #    requires:
       #      - build-docker-image-after-update
-      - delete-cluster
+      - delete-cluster:
+          cluster-name: udacity-capstone-cluster
