@@ -100,7 +100,7 @@ jobs:
             dockerpath="bencdr0/nginxapp"
             
             # check for docker scan:
-            docker scan --version
+            # docker scan --version
             
             # Step 2:  
             # Authenticate & tag
