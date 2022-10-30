@@ -38,6 +38,46 @@ commands:
             fi
             
 jobs:
+  build:
+    docker:
+    # Use the same Docker base as the project
+    # taken from the microservices exercise as reference.
+      - image: python:3.7.3-stretch
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "requirements.txt" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+
+      - run:
+          name: install dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            make install
+            # Install hadolint
+            wget -O /bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64 
+            chmod +x /bin/hadolint
+          
+      - save_cache:
+          paths:
+            - ./venv
+          key: v1-dependencies-{{ checksum "requirements.txt" }}
+        
+      # run lint!
+      - run:
+          name: run lint
+          command: |
+            . venv/bin/activate
+            make lint 
+  
   build-frontend:
     docker:
       - image: circleci/node:13.8.0
@@ -297,7 +337,7 @@ jobs:
             # Run the Docker Hub container with kubernetes
             # kubectl run nginxapp --image=$dockerpath --port=80 --labels app=nginxapp
             kubectl create deployment nginxapp-minikube --image=bencdr0/nginxapp
-            kubectl expose deployment nginxapp-minikube --type=LoadBalancer --port=8080
+            kubectl expose deployment nginxapp-minikube --type=LoadBalancer --port=8000
             sleep 60
 
             # Step 3:
@@ -312,6 +352,11 @@ jobs:
             echo NODE_PORT=$NODE_PORT
             export external_IP=$(echo $( kubectl get services nginxapp-minikube) | cut -d ' ' -f 10)  
             # curl $external_IP:$NODE_PORT
+            #https://knowledge.udacity.com/questions/679601
+            kubectl describe service
+            # workaround to delete the cluster for now as deletion was so error prone and lengthy otherwise.
+            sleep 600
+            eksctl delete cluster --name=my-eks-demo
             
             # reference. https://stackoverflow.com/questions/53536907/kubectl-wait-for-condition-complete-timeout-30s
             # kubectl wait --for=condition=ready pod -l app=nginxapp
