@@ -330,7 +330,7 @@ jobs:
 workflows:
   default:
     jobs:
-      - lint-dockerfile
+      - lint-dockerfile:
           filters:
             branches:
               only: [dev-branch, initialize-branch]
