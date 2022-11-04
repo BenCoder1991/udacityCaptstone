@@ -52,9 +52,10 @@ docker image ls
 docker push $dockerpath:latest
 docker logout
 
-sleep 5
+sleep 10
 
 minikube kubectl -- set image deployments/nginxapp-deployment nginxapp=bencdr0/nginxapp:latest
+# Reference: https://stackoverflow.com/a/51835397
 minikube kubectl -- rollout restart deployments/nginxapp-deployment
 
 # Sleep to allow for startup
@@ -74,4 +75,4 @@ mv index_old.html index.html
 
 minikube delete --all
 docker system prune
-inikube ssh -- docker system prune
+minikube ssh -- docker system prune
