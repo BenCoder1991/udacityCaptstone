@@ -352,4 +352,4 @@ workflows:
       - delete-cluster:
           cluster-name: udacity-capstone-cluster
           requires:
-            - update-cluster:
+            - update-cluster
