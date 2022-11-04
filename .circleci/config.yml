@@ -332,7 +332,7 @@ workflows:
   default:
     jobs:
       - lint-dockerfile
-      - build-docker-image-before-update
+      - build-docker-image-before-update:
           requires: 
             - build
       - create-cluster:
