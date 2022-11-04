@@ -1,12 +1,11 @@
-# https://wiki.alpinelinux.org/wiki/Nginx
+# General reference: https://wiki.alpinelinux.org/wiki/Nginx
 FROM alpine:3.14
 
 ## Step 1:
 # Install packages from requirements.txt
 # hadolint ignore=DL3013
 RUN apk update --no-cache &&\
-    # version not to fail
-    apk add nginx --no-cache &&\
+    apk add nginx=1.20.2-r1 --no-cache &&\
     # c.f. https://github.com/gliderlabs/docker-alpine/issues/183
     apk add openrc=0.43.3-r3 --no-cache &&\
     adduser -D -g 'www' www &&\
@@ -26,6 +25,5 @@ COPY index.html /www/
 EXPOSE 80
 
 ## Step 5:
-# Run app.py at container launch
-#how to start nginx automatically
+# Run nginx reference: https://stackoverflow.com/questions/18861300/how-to-run-nginx-within-a-docker-container-without-halting
 CMD ["nginx", "-g", "daemon off;"]

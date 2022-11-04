@@ -21,9 +21,6 @@ jobs:
     # Use the same Docker base as the project
     # taken from the microservices exercise as reference.
       - image: python:3.7.3-stretch
-
-    working_directory: ~/repo
-
     steps:
       - checkout
       - run:
@@ -68,16 +65,13 @@ jobs:
       - run:
           name: build docker image
           command: |
-            # Step 1:
             docker build --tag=nginxapp .
       - run:
           name: list all docker images
           command: |
-            # Step 2: 
             # List docker images
             # https://docs.docker.com/engine/reference/commandline/images/
             docker images --all
-            # Step 1:
       - run:
           name: push image to docker
           command:  |
@@ -95,8 +89,8 @@ jobs:
             docker push $dockerpath:latest
             docker logout
       - destroy-environment
-    # Reference.https://circleci.com/developer/orbs/orb/circleci/aws-eks         
-
+  
+  # Job reference: https://circleci.com/developer/orbs/orb/circleci/aws-eks         
   create-cluster:
     docker:
       - image: 'cimg/python:3.10'
@@ -139,38 +133,44 @@ jobs:
       - aws-eks/update-kubeconfig-with-authenticator:
           cluster-name: << parameters.cluster-name >>
       - run:
+          name: Install EKSCTL
           command: |
             ## Reference. https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html
             # Step 1 -Install EKSCTL
             curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
             sudo mv /tmp/eksctl /usr/local/bin
             eksctl version
-            
+      - run:
+          name: Initialize Cluster with Docker image
+          command: |
+            # Step 0: define dockerpath
             dockerpath="bencdr0/nginxapp"
-            # Step 2 - Run the Docker Hub container with kubernetes
+            
+            # Step 1 - Run the Docker Hub container with kubernetes
             kubectl create deployment nginxapp-deployment --image=bencdr0/nginxapp:latest
             # Reference: https://www.theserverside.com/blog/Coffee-Talk-Java-News-Stories-and-Opinions/Imperative-vs-declarative-Kubernetes-commands-Whats-the-difference
-            kubectl scale --replicas=3 deployment/nginxapp-deployment 
+            kubectl scale --replicas=2 deployment/nginxapp-deployment 
             kubectl expose deployment nginxapp-deployment --type=LoadBalancer --port=8000 --target-port=80
             
             # sleep to allow full start-up
             sleep 60
-
-            # Step 3 - List all relevant pod, deployment, service, node information to debug
+      - run:
+          name: Run diagnostics
+          command: |
+            # Step 2 - List all relevant pod, deployment, service, node information to debug
             kubectl get pods
             kubectl get deployments
             kubectl get services
             kubectl get nodes
             kubectl describe service
-
-            # Step 4 - Mini Smoke test and address/port diagnostics
             export NODE_ID=$(echo $(kubectl get pods) | cut -d ' ' -f 6) 
             echo NODE_ID=$NODE_ID
             export NODE_PORT=$(kubectl get service/nginxapp-deployment -o go-template='{{(index .spec.ports 0).nodePort}}')
             echo NODE_PORT=$NODE_PORT
+      - run:
+          name: Perform Smoke-Test
+          command: |
             export external_IP=$(echo $( kubectl get services nginxapp-deployment) | cut -d ' ' -f 10)  
-            sleep 60
-            
             # Mini smoke test, curl port 8000 (reference: https://knowledge.udacity.com/questions/679601)
             curl $external_IP:8000
           name: Test cluster
@@ -201,11 +201,7 @@ jobs:
               apk upgrade
               apk add -U curl
       - run:
-          name: update html file 
-          command: |
-            which docker
-      - run:
-          name: check docker version
+          name: Update the html file (index.html->index_old.html, index_new.html->index.html)
           command: |
             echo "----------------index.html before change----------------"
             cat index.html
@@ -214,53 +210,37 @@ jobs:
             echo "----------------index.html after change----------------"
             cat index.html
       - run:
+          name: check docker version
+          command: |
+            which docker
+      - run:
           name: build docker image
           command: |
-            # Step 1:
             docker build --tag=nginxapp .
       - run:
           name: list all docker images
           command: |
-            # Step 2: 
             # List docker images
             # https://docs.docker.com/engine/reference/commandline/images/
             docker images --all
-            # Step 1:
       - run:
           name: push image to docker
           command:  |
-            # Create dockerpath
+            # Step 1: Create dockerpath
             dockerpath="bencdr0/nginxapp"
-            
-            # check for docker scan:
-            # docker scan --version
-            
-            # Step 2:  
-            # Authenticate & tag
             echo "Docker ID and Image: $dockerpath"
             
+            # Step 2: Authenticate & tag
             # https://docs.docker.com/engine/reference/commandline/login/
             docker login --username $DOCKERHUB_USERNAME --password $DOCKERHUB_PASSWORD
             docker tag nginxapp:latest $dockerpath:latest # according to docker standard documentation
             docker image ls
             
-            # Step 3:
-            # Push image to a docker repository, according to cheat-sheet and standard documentation
+            # Step 3: Push image to a docker repository, according to cheat-sheet and standard documentation
             docker push $dockerpath:latest
             docker logout
-      - run:
-          name: pull image from docker
-          command:  |
-            docker pull bencdr0/nginxapp:latest
-            docker info
-
-            docker run -d -p 8000:80 nginxapp
-            docker container ls
-            curl http://localhost:80
-            # docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $INSTANCE_ID
       - destroy-environment
-    # Reference.https://circleci.com/developer/orbs/orb/circleci/aws-eks   
-
+  # Reference job flow: https://circleci.com/developer/orbs/orb/circleci/aws-eks   
   update-cluster:
     docker:
       - image: 'cimg/python:3.10'
@@ -276,36 +256,48 @@ jobs:
       - aws-eks/update-kubeconfig-with-authenticator:
           cluster-name: << parameters.cluster-name >>
       - run:
+          name: Install EKSCTL
           command: |
             ## Reference. https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html
             # Step 1 -Install EKSCTL
             curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
             sudo mv /tmp/eksctl /usr/local/bin
             eksctl version
-            
+      - run:
+          name: Perform rolling update / rolling deployment
+          command: |
+            # Step 0 - Set Docker path
             dockerpath="bencdr0/nginxapp"
-            # Step 2 - Apply the new image
+            
+            # Step 1 - Apply the new image
             # Reference: https://kubernetes.io/docs/tutorials/kubernetes-basics/update/update-interactive/
             kubectl set image deployments/nginxapp-deployment nginxapp=bencdr0/nginxapp:latest
+            
+            # Step 2 - Restart
             # Reference: https://stackoverflow.com/a/51835397
             minikube kubectl -- rollout restart deployments/nginxapp-deployment
 
             # see rollout status
             kubectl rollout status deployments/nginxapp-deployment
-
-
-            # Step 3 - Mini Smoke test and address/port diagnostics
+      - run:
+          name: Run diagnostics
+          command: |
+            # Step 2 - List all relevant pod, deployment, service, node information to debug
+            kubectl get pods
+            kubectl get deployments
+            kubectl get services
+            kubectl get nodes
+            kubectl describe service
             export NODE_ID=$(echo $(kubectl get pods) | cut -d ' ' -f 6) 
             echo NODE_ID=$NODE_ID
             export NODE_PORT=$(kubectl get service/nginxapp-deployment -o go-template='{{(index .spec.ports 0).nodePort}}')
             echo NODE_PORT=$NODE_PORT
+      - run:
+          name: Perform Smoke-Test
+          command: |
             export external_IP=$(echo $( kubectl get services nginxapp-deployment) | cut -d ' ' -f 10)  
-            sleep 60
-            
             # Mini smoke test, curl port 8000 (reference: https://knowledge.udacity.com/questions/679601)
             curl $external_IP:8000
-            eksctl delete cluster --name=<< parameters.cluster-name >>
-          name: Test cluster
       - destroy-environment
   
   delete-cluster:
@@ -323,13 +315,16 @@ jobs:
       - aws-eks/update-kubeconfig-with-authenticator:
           cluster-name: << parameters.cluster-name >>
       - run:
+          name: Install EKSCTL
           command: |
             ## Reference. https://docs.aws.amazon.com/eks/latest/userguide/eksctl.html
             # Step 1: Install EKSCTL
             curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
             sudo mv /tmp/eksctl /usr/local/bin
             eksctl version
-            
+      - run:
+          name: Delete Cluster
+          command: |
             # Step 2: Delete cluster = helper job to delete infrastructure to compensate for local eksctl unavailability
             eksctl delete cluster --name=<< parameters.cluster-name >>
 
@@ -337,25 +332,25 @@ workflows:
   default:
     jobs:
       - lint-dockerfile
-      # - build-docker-image-before-update
-      #    requires: 
-      #      - build
-      # - create-cluster:
-      #    cluster-name: udacity-capstone-cluster
-      #     requires:
-      #      - build-docker-image-before-update
-      #- initialize-cluster:
-      #    cluster-name: udacity-capstone-cluster
-      #    requires:
-      #      - create-cluster
-      # - build-docker-image-after-update
-      #    requires:
-      #      - initialize-cluster
-      #- update-cluster:
-      #    cluster-name: udacity-capstone-cluster
-      #    requires:
-      #      - build-docker-image-after-update
-      #- delete-cluster:
-      #    cluster-name: udacity-capstone-cluster
-      #    requires:
-      #      - initialize-cluster
+      - build-docker-image-before-update
+          requires: 
+            - build
+      - create-cluster:
+          cluster-name: udacity-capstone-cluster
+          requires:
+            - build-docker-image-before-update
+      - initialize-cluster:
+          cluster-name: udacity-capstone-cluster
+          requires:
+            - create-cluster
+       - build-docker-image-after-update
+          requires:
+            - initialize-cluster
+      - update-cluster:
+          cluster-name: udacity-capstone-cluster
+          requires:
+            - build-docker-image-after-update
+      - delete-cluster:
+          cluster-name: udacity-capstone-cluster
+          requires:
+            - update-cluster:
