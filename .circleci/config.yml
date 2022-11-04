@@ -173,7 +173,6 @@ jobs:
             export external_IP=$(echo $( kubectl get services nginxapp-deployment) | cut -d ' ' -f 10)  
             # Mini smoke test, curl port 8000 (reference: https://knowledge.udacity.com/questions/679601)
             curl $external_IP:8000
-          name: Test cluster
       - destroy-environment
   
   # reference: https://github.com/udacity/nd9991-c3-hello-world-exercise-solution/blob/main/.circleci/config.yml
