@@ -334,9 +334,6 @@ workflows:
       - build-docker-image-before-update:
           requires: 
             - lint-dockerfile
-          filters:
-            branches:
-              only: [dev-branch]
       - create-cluster:
           cluster-name: udacity-capstone-cluster
           requires:
@@ -350,11 +347,12 @@ workflows:
             - initialize-cluster
       - update-cluster:
           cluster-name: udacity-capstone-cluster
-          filters:
-            branches:
-              only: [master]
+          requires:
+            - build-docker-image-after-update
       - delete-cluster:
           cluster-name: update-cluster
+          requires:
+            - update-cluster
 
               
   # Reference how to push to different branches
