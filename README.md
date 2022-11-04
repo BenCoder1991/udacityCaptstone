@@ -6,6 +6,9 @@
 - The pipeline is built with circleci
 - For simplicity and better scalability the cluster is both initialized and updated via circleci, where the udpate of the index.html file (the default file of the nginx app) is performed in a second job.
 
+### Check against rubric
+
+
 ### General references:
 - https://github.com/udacity/cdond-c3-projectstarter 
 - https://github.com/BenCoder1991/udacityCICDsubmission (my previous project submission for: "Give Your Application Auto-Deploy Superpowers")
