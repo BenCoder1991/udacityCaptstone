@@ -334,7 +334,7 @@ workflows:
       - lint-dockerfile
       - build-docker-image-before-update:
           requires: 
-            - build
+            - lint-dockerfile
       - create-cluster:
           cluster-name: udacity-capstone-cluster
           requires:
