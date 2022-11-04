@@ -330,30 +330,21 @@ jobs:
 workflows:
   default:
     jobs:
-      - lint-dockerfile:
-          filters:
-            branches:
-              only: [dev-branch, initialize-branch]
+      - lint-dockerfile
       - build-docker-image-before-update:
           requires: 
             - lint-dockerfile
           filters:
             branches:
-              only: [initialize-branch]
+              only: [dev-branch]
       - create-cluster:
           cluster-name: udacity-capstone-cluster
           requires:
             - build-docker-image-before-update
-          filters:
-            branches:
-              only: [initialize-branch]
       - initialize-cluster:
           cluster-name: udacity-capstone-cluster
           requires:
             - create-cluster
-          filters:
-            branches:
-              only: [initialize-branch]
       - build-docker-image-after-update:
           requires:
             - initialize-cluster
@@ -363,9 +354,7 @@ workflows:
             branches:
               only: [master]
       - delete-cluster:
-          cluster-name: udacity-capstone-cluster
-          filters:
-            branches:
-              only: [delete-branch]
+          cluster-name: update-cluster
+
               
   # Reference how to push to different branches
