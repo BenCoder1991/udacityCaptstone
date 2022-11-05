@@ -5,6 +5,11 @@
 - I chose a rolling deployment strategy, where I update the image for the previous kubernetes cluster.
 - The pipeline is built with circleci
 - For simplicity and better scalability the cluster is both initialized and updated via circleci, where the udpate of the index.html file (the default file of the nginx app) is performed in a second job.
+- The screenshots were taken by splitting-up the pipeline (i.e. commenting out the unused jobs and dependencies) in 3 stages. 
+    - 1. Stage linting jobs 
+    - 2. Stage: lint, build image, create cluster, initialize cluster. 
+    - 3. build (updated image) + update cluster
+- The pipelien can also be run as one together (in this case all dependencies need to be uncommented to allow a proper circleci job flow)
 
 ### Check against rubric
 #### Set Up Pipeline
