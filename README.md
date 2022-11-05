@@ -13,19 +13,20 @@
 
 #### Build Docker Container
 - Execute linting step in code pipeline: circleci job 'lint-dockerfile', c.f. screenshots linting_failed.png and linting_successful.png
-- Build a Docker container in a pipeline: circleci jobs build-docker-image-before-update, build-docker-image-after-update
+- Build a Docker container in a pipeline: circleci jobs 'build-docker-image-before-update', 'build-docker-image-after-update'
 
 #### Successful Deployment
-- The Docker container is deployed to a Kubernetes cluster: done via AWS EKS / EKSCTL es encouraged in the mentor help section, done via circleci jobs 'create-cluster' and 'initialize-cluster'
+- The Docker container is deployed to a Kubernetes cluster: done via AWS EKS / EKSCTL as encouraged in the mentor help section, done via circleci jobs 'create-cluster' and 'initialize-cluster'
 - Use Blue/Green Deployment or a Rolling Deployment successfully: rolling deplyoment via circlci job 'update_cluster.png'. C.f. screenshots "old_website.png" and "new_website.png"
 
-
 ### General references:
-- https://github.com/udacity/cdond-c3-projectstarter 
+- https://github.com/udacity/cdond-c3-projectstarter (provided by Udacity as a template)
 - https://github.com/BenCoder1991/udacityCICDsubmission (my previous project submission for: "Give Your Application Auto-Deploy Superpowers")
 - https://github.com/BenCoder1991/udacityMicroservicesSubmission (my previous project submission for: "Container Orchestration with Kubernetes")
 - https://docs.docker.com
-- detailed references in the code
+- https://kubernetes.io/docs/home/
+- https://wiki.alpinelinux.org/wiki/Nginx
+- Detailed references are added in the code
 
 
 ### Built With
@@ -33,8 +34,9 @@
 - [Amazon AWS](https://aws.amazon.com/) - Cloud services
 - [AWS CLI](https://aws.amazon.com/cli/) - Command-line tool for AWS
 - [Elastic Kubernetes Service](https://aws.amazon.com/eks/) - AWS service to build and scale Kubernetes clusters
-- [EKSCTL] (https://eksctl.io) - The official CLI for Amazon EKS
-- [Docker] (www.docker.com) - Containerization software
+- [EKSCTL](https://eksctl.io) - The official CLI for Amazon EKS
+- [Docker](www.docker.com) - Containerization software
+- [nginx](https://nginx.org/en/)- HTTP server
 
 
 ### License
