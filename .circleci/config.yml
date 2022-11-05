@@ -168,9 +168,14 @@ jobs:
             export NODE_PORT=$(kubectl get service/nginxapp-deployment -o go-template='{{(index .spec.ports 0).nodePort}}')
             echo NODE_PORT=$NODE_PORT
       - run:
-          name: Perform Smoke-Test
+          name: Perform Smoke-Test and diagnose load balancer
           command: |
-            export external_IP=$(echo $( kubectl get services nginxapp-deployment) | cut -d ' ' -f 10)  
+            # define external IP
+            export external_IP=$(echo $( kubectl get services nginxapp-deployment) | cut -d ' ' -f 10)
+            # define external LB ID
+            export loadbalancer_ID=$(echo $external_IP | cut -d '-' -f 1)
+            # Diagnose instance helath of loadbalancer
+            aws elb describe-instance-health --load-balancer-name $loadbalancer_ID --output table
             # Mini smoke test, curl port 8000 (reference: https://knowledge.udacity.com/questions/679601)
             curl $external_IP:8000
       - destroy-environment
@@ -274,7 +279,7 @@ jobs:
             
             # Step 2 - Restart
             # Reference: https://stackoverflow.com/a/51835397
-            minikube kubectl -- rollout restart deployments/nginxapp-deployment
+            kubectl rollout restart deployments/nginxapp-deployment
 
             # see rollout status
             kubectl rollout status deployments/nginxapp-deployment
@@ -292,9 +297,14 @@ jobs:
             export NODE_PORT=$(kubectl get service/nginxapp-deployment -o go-template='{{(index .spec.ports 0).nodePort}}')
             echo NODE_PORT=$NODE_PORT
       - run:
-          name: Perform Smoke-Test
+          name: Perform Smoke-Test and diagnose load balancer
           command: |
-            export external_IP=$(echo $( kubectl get services nginxapp-deployment) | cut -d ' ' -f 10)  
+            # define external IP
+            export external_IP=$(echo $( kubectl get services nginxapp-deployment) | cut -d ' ' -f 10)
+            # define external LB ID
+            export loadbalancer_ID=$(echo $external_IP | cut -d '-' -f 1)
+            # Diagnose instance helath of loadbalancer
+            aws elb describe-instance-health --load-balancer-name $loadbalancer_ID --output table
             # Mini smoke test, curl port 8000 (reference: https://knowledge.udacity.com/questions/679601)
             curl $external_IP:8000
       - destroy-environment
@@ -354,5 +364,4 @@ workflows:
           requires:
             - update-cluster
 
-              
   # Reference how to push to different branches

@@ -7,6 +7,17 @@
 - For simplicity and better scalability the cluster is both initialized and updated via circleci, where the udpate of the index.html file (the default file of the nginx app) is performed in a second job.
 
 ### Check against rubric
+#### Set Up Pipeline
+- Create Github repository with project code: https://github.com/BenCoder1991/udacityCaptstone
+- Use image repository to store Docker images: https://hub.docker.com/r/bencdr0/nginxapp
+
+#### Build Docker Container
+- Execute linting step in code pipeline: circleci job 'lint-dockerfile', c.f. screenshots linting_failed.png and linting_successful.png
+- Build a Docker container in a pipeline: circleci jobs build-docker-image-before-update, build-docker-image-after-update
+
+#### Successful Deployment
+- The Docker container is deployed to a Kubernetes cluster: done via AWS EKS / EKSCTL es encouraged in the mentor help section, done via circleci jobs 'create-cluster' and 'initialize-cluster'
+- Use Blue/Green Deployment or a Rolling Deployment successfully: rolling deplyoment via circlci job 'update_cluster.png'. C.f. screenshots "old_website.png" and "new_website.png"
 
 
 ### General references:
