@@ -1,7 +1,7 @@
 ## Capstone project
 
 ### About this project
-- Launch a simple nginx application with a default index.html page that is updated as part of the pipeline. V1: Before the update, V2: After the update.
+- Launch a simple nginx application with a default **index.html** page that is updated as part of the pipeline. V1: Before the update, V2: After the update.
 - I chose a rolling deployment strategy, where I update the image for the previous kubernetes cluster.
 - The pipeline is built with CircleCi
 - For simplicity and better scalability the cluster is both initialized and updated via CircleCi, where the update of the *index.html* file (the default file of the nginx app) is performed in a second job.
@@ -9,7 +9,8 @@
     - 1. Stage: **lint-dockerfile** (failed and successful)
     - 2. Stage: **lint-dockerfile** , **build-docker-image-before-update**, **create-cluster**, **initialize-cluster**. 
     - 3. Stage: **build-docker-image-after-update**, **update-cluster**
-- The pipeline can also be run as one together (in this case all dependencies need to be uncommented to allow a proper circleci job flow)
+- The pipeline can also be run as one together (in this case all dependencies need to be uncommented to allow a proper CircleCi job flow)
+
 
 ### Check against rubric
 #### Set Up Pipeline
@@ -21,8 +22,9 @@
 - Build a Docker container in a pipeline: CircleCi jobs **build-docker-image-before-update**, **build-docker-image-after-update**
 
 #### Successful Deployment
-- The Docker container is deployed to a Kubernetes cluster: done with AWS EKS / EKSCTL as encouraged in the mentor help section and through circleci jobs **create-cluster** and **initialize-cluster**
-- Use Blue/Green Deployment or a Rolling Deployment successfully: rolling deployment via circlci job **update-cluster**. c.f. screenshots **old_website.png" and **new_website.png**
+- The Docker container is deployed to a Kubernetes cluster: done with AWS EKS / EKSCTL as encouraged in the mentor help section and through CircleCi jobs **create-cluster** and **initialize-cluster**
+- Use Blue/Green Deployment or a Rolling Deployment successfully: done with rolling deployment via circlci job **update-cluster**. c.f. screenshots **old_website.png" and **new_website.png**
+
 
 ### General references:
 - https://github.com/udacity/cdond-c3-projectstarter (provided by Udacity as a template)
@@ -44,7 +46,6 @@
 - [nginx](https://nginx.org/en/)- HTTP server
 - [Cloud9](https://aws.amazon.com/cloud9/) - Cloud-based IDE from AWS
 - [GitHub](www.github.com) - Internet-based version control
-
 
 
 ### License
