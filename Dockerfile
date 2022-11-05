@@ -6,7 +6,7 @@ FROM alpine:3.14
 # hadolint ignore=DL3013
 RUN apk update --no-cache &&\
     # to fail the linter remove version: =1.20.2-r1
-    apk add nginx --no-cache &&\
+    apk add nginx=1.20.2-r1 --no-cache &&\
     # c.f. https://github.com/gliderlabs/docker-alpine/issues/183
     apk add openrc=0.43.3-r3 --no-cache &&\
     adduser -D -g 'www' www &&\
